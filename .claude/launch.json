@@ -1,0 +1,12 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "dev",
+      "runtimeExecutable": "/Users/frankbot/local/node/bin/node",
+      "runtimeArgs": ["/Users/frankbot/Claude/wasimmowert/node_modules/.bin/vite", "--host", "--root", "/Users/frankbot/Claude/wasimmowert"],
+      "cwd": "/Users/frankbot/Claude/wasimmowert",
+      "port": 5173
+    }
+  ]
+}

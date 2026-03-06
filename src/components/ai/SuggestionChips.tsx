@@ -1,6 +1,6 @@
 import {
   Banknote, TrendingUp, PiggyBank, Percent,
-  ArrowDownCircle, Lightbulb, Wallet, FileText,
+  ArrowDownCircle, Lightbulb, Wallet,
   Wrench, Scale, Building2, Calculator,
 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'

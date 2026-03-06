@@ -36,8 +36,6 @@ const EIGENNUTZUNG_EXCLUDED: Set<string> = new Set([
 
 export function calculateSensitivitaet(project: Project): SensitivitaetResult[] {
   const baseResult = calculateAll(project)
-  const baseCashflow = baseResult.kpis.jaehrlichCashflowNachSteuer
-
   const params = project.nutzungsart === 'eigennutzung'
     ? PARAMS.filter((p) => !EIGENNUTZUNG_EXCLUDED.has(p.key))
     : PARAMS
@@ -68,8 +66,8 @@ export function calculateSensitivitaet(project: Project): SensitivitaetResult[] 
         delta: Math.abs(cashflowPlus - cashflowMinus),
       }
     })
-    .filter((v): v is SensitivitaetResult => v !== null)
-    .sort((a, b) => b.delta - a.delta)
+    .filter((v): v is NonNullable<typeof v> => v !== null)
+    .sort((a, b) => (b?.delta ?? 0) - (a?.delta ?? 0))
 }
 
 export interface SensitivitaetTipp {

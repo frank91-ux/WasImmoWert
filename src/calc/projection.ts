@@ -14,7 +14,7 @@ function getModernisierungKosten(project: Project, year: number): number {
 
 export function calculateProjection(
   project: Project,
-  kaufnebenkosten: KaufnebenkostenResult,
+  _kaufnebenkosten: KaufnebenkostenResult,
   financing: FinancingResult,
   rental: RentalResult,
   operatingCosts: OperatingCostResult,

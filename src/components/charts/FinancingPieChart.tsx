@@ -12,7 +12,7 @@ interface FinancingPieChartProps {
   eigenkapital: number
 }
 
-export function FinancingPieChart({ result, kaufpreis, eigenkapital }: FinancingPieChartProps) {
+export function FinancingPieChart({ result, kaufpreis: _kaufpreis, eigenkapital }: FinancingPieChartProps) {
   const { kaufnebenkosten, financing } = result
 
   const data = [

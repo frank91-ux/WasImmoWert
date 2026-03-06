@@ -91,6 +91,7 @@ export function CashflowChart({ result, nutzungsart = 'vermietung', zinsbindung,
               iconType="rect"
               iconSize={10}
               wrapperStyle={LEGEND_STYLE}
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
               payload={[
                 { value: nutzungsart === 'eigennutzung' ? 'Ersparte Miete' : 'Mieteinnahmen', type: 'rect', color: COLORS.mieteinnahmen, id: 'miet' },
                 { value: 'NK', type: 'rect', color: COLORS.nebenkosten, id: 'nk' },
@@ -99,7 +100,7 @@ export function CashflowChart({ result, nutzungsart = 'vermietung', zinsbindung,
                 { value: 'Steuer', type: 'rect', color: COLORS.steuer, id: 'steuer' },
                 { value: 'Netto', type: 'line', color: COLORS.netto, id: 'netto' },
                 ...(zinsBoundaries.length > 0 ? [ZINSBINDUNG_LEGEND_ENTRY] : []),
-              ]}
+              ] as any}
             />
             <ReferenceLine y={0} stroke={CHART_COLORS.muted} strokeDasharray="3 3" strokeOpacity={0.5} />
             {zinsBoundaries.filter((b) => b.year <= maxYear).map((b) => (

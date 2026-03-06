@@ -55,12 +55,13 @@ export function EquityGrowthChart({ projection, zinsbindung, zinsbindungPeriods 
               iconType="line"
               iconSize={12}
               wrapperStyle={LEGEND_STYLE}
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
               payload={[
                 { value: 'Eigenkapital', type: 'line', color: CHART_COLORS.primary, id: 'eigenkapital' },
                 { value: 'Immobilienwert', type: 'line', color: CHART_COLORS.positive, id: 'immobilienWert' },
                 { value: 'Restschuld', type: 'line', color: CHART_COLORS.negative, id: 'restschuld' },
                 ...(zinsBoundaries.length > 0 ? [ZINSBINDUNG_LEGEND_ENTRY] : []),
-              ]}
+              ] as any}
             />
             {zinsBoundaries.filter((b) => b.year <= projection.length).map((b) => (
               <ReferenceLine

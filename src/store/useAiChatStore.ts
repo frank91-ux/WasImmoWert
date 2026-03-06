@@ -46,10 +46,8 @@ export const useAiChatStore = create<AiChatState>((set) => ({
   clearMessages: () => set({ messages: [] }),
 
   loadApiKey: () => {
-    if (ENV_API_KEY) {
-      set({ apiKey: ENV_API_KEY })
-      return
-    }
+    if (ENV_API_KEY) return // already initialized with env key
+
     try {
       const key = localStorage.getItem(API_KEY_STORAGE)
       set({ apiKey: key })
@@ -68,10 +66,8 @@ export const useAiChatStore = create<AiChatState>((set) => ({
   },
 
   removeApiKey: () => {
-    if (ENV_API_KEY) {
-      set({ apiKey: ENV_API_KEY })
-      return
-    }
+    if (ENV_API_KEY) return // can't remove env key
+
     try {
       localStorage.removeItem(API_KEY_STORAGE)
     } catch {

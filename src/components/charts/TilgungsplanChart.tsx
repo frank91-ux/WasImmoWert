@@ -65,7 +65,7 @@ export function TilgungsplanChart({ projection, zinsbindung, zinsbindungPeriods 
                 { value: 'Tilgungsanteil', type: 'rect', color: CHART_COLORS.primary, id: 'tilgung' },
                 { value: 'Restschuld', type: 'line', color: CHART_COLORS.muted, id: 'restschuld' },
                 ZINSBINDUNG_LEGEND_ENTRY,
-              ] : undefined}
+              ] : undefined as any}
             />
             <defs>
               <linearGradient id="gradZins" x1="0" y1="0" x2="0" y2="1">

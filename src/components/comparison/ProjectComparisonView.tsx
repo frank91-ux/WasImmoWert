@@ -146,7 +146,7 @@ function OverlaidCharts({ projects }: { projects: Project[] }) {
                 formatter={(value: number, name: string) => {
                   const idx = parseInt(name.replace('cf_', ''))
                   return [formatEur(value) + '/Mon', projects[idx]?.name ?? name]
-                }}
+                } as any}
                 contentStyle={TOOLTIP_STYLE}
               />
               <Legend
@@ -157,7 +157,7 @@ function OverlaidCharts({ projects }: { projects: Project[] }) {
                   type: 'line' as const,
                   color: PROJECT_COLORS[i % PROJECT_COLORS.length],
                   id: `cf_${i}`,
-                }))}
+                })) as any}
               />
               <ReferenceLine y={0} stroke={CHART_COLORS.muted} strokeDasharray="3 3" strokeOpacity={0.5} />
               {projects.map((_, i) => (

@@ -6,7 +6,7 @@ import {
 } from 'recharts'
 import { ChartCard, type TimeRange } from './ChartCard'
 import { formatEur } from '@/lib/format'
-import { AXIS_TICK, GRID_STYLE, ANIMATION_DURATION, CHART_COLORS } from './chartTheme'
+import { AXIS_TICK, GRID_STYLE, ANIMATION_DURATION, CHART_COLORS, TOOLTIP_STYLE } from './chartTheme'
 import { CashflowInfoDialog } from './CashflowInfoDialog'
 
 interface MonthlyCashflowChartProps {
@@ -261,7 +261,7 @@ export function MonthlyCashflowChart({ result, nutzungsart = 'vermietung', scena
                 { value: 'Steuer', type: 'rect', color: COLORS.steuer, id: 'steuer' },
                 { value: 'Cashflow +', type: 'rect', color: COLORS.nettoPos, id: 'cfpos' },
                 { value: 'Cashflow −', type: 'rect', color: COLORS.nettoNeg, id: 'cfneg' },
-              ]}
+              ] as any}
             />
 
             {/* Zero reference line — always visible */}

@@ -82,7 +82,7 @@ export function WertentwicklungChart({ projection, baseProjection, defaultTimeRa
                 ...(hasBaseline ? [
                   { value: 'Original', type: 'plainline' as const, color: CHART_COLORS.muted, id: 'bek' },
                 ] : []),
-              ]}
+              ] as any}
             />
             <defs>
               <linearGradient id="gradEkAi" x1="0" y1="0" x2="0" y2="1">

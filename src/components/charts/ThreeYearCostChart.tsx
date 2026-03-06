@@ -91,7 +91,7 @@ export function ThreeYearCostChart({ result, nutzungsart = 'vermietung' }: Three
                 { value: 'Steuer', type: 'rect', color: COLORS.steuer, id: 'steuer' },
                 { value: 'Zinsanteil (Kredit)', type: 'rect', color: COLORS.zinsanteil, id: 'za' },
                 { value: 'Tilgungsanteil (Kredit)', type: 'rect', color: COLORS.tilgungsanteil, id: 'ta' },
-              ]}
+              ] as any}
             />
             <ReferenceLine y={0} stroke={CHART_COLORS.muted} strokeDasharray="3 3" strokeOpacity={0.5} />
 

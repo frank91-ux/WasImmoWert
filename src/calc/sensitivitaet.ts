@@ -35,7 +35,6 @@ const EIGENNUTZUNG_EXCLUDED: Set<string> = new Set([
 ])
 
 export function calculateSensitivitaet(project: Project): SensitivitaetResult[] {
-  const baseResult = calculateAll(project)
   const params = project.nutzungsart === 'eigennutzung'
     ? PARAMS.filter((p) => !EIGENNUTZUNG_EXCLUDED.has(p.key))
     : PARAMS

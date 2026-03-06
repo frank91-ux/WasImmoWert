@@ -143,10 +143,11 @@ function OverlaidCharts({ projects }: { projects: Project[] }) {
               <XAxis dataKey="label" tick={{ ...AXIS_TICK, fontSize: 10 }} interval={xInterval} />
               <YAxis tick={{ ...AXIS_TICK, fontSize: 10 }} tickFormatter={(v) => `${Math.round(v)}`} width={50} />
               <Tooltip
-                formatter={(value: number, name: string) => {
+                formatter={((value: number, name: string) => {
                   const idx = parseInt(name.replace('cf_', ''))
                   return [formatEur(value) + '/Mon', projects[idx]?.name ?? name]
-                } as any}
+                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                }) as any}
                 contentStyle={TOOLTIP_STYLE}
               />
               <Legend

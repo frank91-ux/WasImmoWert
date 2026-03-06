@@ -22,7 +22,8 @@ export interface VerkaufTimepoint {
 export function calculateVerkaufSimulation(
   project: Project,
   result: CalculationResult,
-  timepoints: number[] = [5, 10, 15, 20, 25]
+  timepoints: number[] = [5, 10, 15, 20, 25],
+  customVerkaufspreis?: number
 ): VerkaufTimepoint[] {
   const gesamtInvestition = result.kaufnebenkosten.gesamtkosten
   const eigenkapital = project.eigenkapital
@@ -33,7 +34,7 @@ export function calculateVerkaufSimulation(
       const yearData = result.projection[year - 1]
       if (!yearData) return null
 
-      const verkaufspreis = yearData.immobilienWert
+      const verkaufspreis = customVerkaufspreis ?? yearData.immobilienWert
       const notarkostenVerkauf = verkaufspreis * 0.015
       const restschuld = yearData.restschuld
 

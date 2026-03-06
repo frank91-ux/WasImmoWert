@@ -127,6 +127,63 @@ function getFormulaNode(kpiKey: string, result?: CalculationResult, project?: Pr
         type: 'text',
         content: p ? `Vergleichbare Marktmiete: ${formatEur(p.ersparteMiete)}/Mon × 12 = ${formatEur(p.ersparteMiete * 12)}/Jahr` : 'Vergleichbare Marktmiete × 12',
       }
+    case 'leistbarkeit':
+      return {
+        type: 'fraction',
+        top: 'Monatliche Immobilienkosten',
+        bottom: 'Monatliches Nettoeinkommen',
+        topValue: r ? formatEur(r.financing.monatlicheRate + r.operatingCosts.betriebskostenGesamt / 12) : undefined,
+        bottomValue: p && (p as Record<string, unknown>).nettoJahresgehalt
+          ? formatEur(((p as Record<string, unknown>).nettoJahresgehalt as number) / 12)
+          : undefined,
+      }
+    case 'marktvergleich':
+      return {
+        type: 'fraction',
+        top: 'Eigener Preis/m² − Ø Regionspreis/m²',
+        bottom: 'Ø Regionspreis/m²',
+        topValue: p && p.wohnflaeche > 0
+          ? `${formatEur(p.kaufpreis / p.wohnflaeche)}/m²`
+          : undefined,
+      }
+    case 'steuerEffekt':
+      return {
+        type: 'sum',
+        parts: [
+          'Mieteinnahmen',
+          '− Absetzbare Zinsen',
+          '− Gebäude-AfA',
+          '− Betriebskosten',
+          '= Zu verst. Einkünfte',
+          '× Steuersatz',
+        ],
+        partValues: r ? [
+          formatEur(r.rental.nettomieteinnahmen),
+          formatEur(-r.tax.absetzbarerZinsanteilJahr),
+          formatEur(-r.tax.afaBetragJahr),
+          formatEur(-r.operatingCosts.betriebskostenGesamt),
+          formatEur(r.tax.zuVersteuerndeEinkuenfteImmobilie),
+          `${p?.persoenlicherSteuersatz ?? 0}% → ${formatEur(r.tax.gesamtSteuerbelastungJahr)}`,
+        ] : undefined,
+      }
+    case 'afaBetrag': {
+      const gebaeudeAnteil = p ? (100 - p.grundstueckAnteil) / 100 : 0
+      const gebaeudeWert = p ? p.kaufpreis * gebaeudeAnteil : 0
+      return {
+        type: 'fraction',
+        top: 'Gebäudewert',
+        bottom: '100 ÷ AfA-Satz (Jahre)',
+        topValue: p ? formatEur(gebaeudeWert) : undefined,
+        bottomValue: r ? `AfA ${r.tax.afaRate}% → ${formatEur(r.tax.afaBetragJahr)}/Jahr` : undefined,
+      }
+    }
+    case 'effSteuersatz':
+      return {
+        type: 'text',
+        content: p
+          ? `Persönlicher Grenzsteuersatz: ${p.persoenlicherSteuersatz}%. Bei jedem Euro absetzbarer Kosten sparst du ${(p.persoenlicherSteuersatz / 100).toFixed(2)} € Steuern.`
+          : 'Persönlicher Grenzsteuersatz',
+      }
     default:
       return null
   }
@@ -178,9 +235,9 @@ export function KpiInfoDialog({ open, onOpenChange, kpiKey, currentValue, result
                 {formulaNode ? (
                   <FormulaDisplay formula={formulaNode} result={currentValue} className="w-full justify-center" />
                 ) : (
-                  <code className="text-sm bg-muted px-3 py-2 rounded block font-mono">
+                  <div className="text-sm bg-muted/50 rounded-lg p-3 text-foreground/80">
                     {info.formula}
-                  </code>
+                  </div>
                 )}
               </div>
               <div>

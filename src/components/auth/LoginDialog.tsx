@@ -11,23 +11,34 @@ import { isSupabaseConfigured } from '@/lib/supabase'
 interface LoginDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
+  /** Called after successful authentication (login, register, skip, or OAuth) */
+  onSuccess?: () => void
+  /** Optional subtitle shown below the main title */
+  subtitle?: string
 }
 
 type TabMode = 'login' | 'register' | 'magic-link'
 
-export function LoginDialog({ open, onOpenChange }: LoginDialogProps) {
+export function LoginDialog({ open, onOpenChange, onSuccess, subtitle }: LoginDialogProps) {
   const { login, register, loginWithMagicLink, loginWithOAuth, skip, loading } = useAuthStore()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [firstName, setFirstName] = useState('')
+  const [agbAccepted, setAgbAccepted] = useState(false)
   const [tab, setTab] = useState<TabMode>('login')
   const hasSupabase = isSupabaseConfigured()
+
+  const handleAuthSuccess = () => {
+    onOpenChange(false)
+    onSuccess?.()
+  }
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
     if (email.trim() && password.trim()) {
       await login(email.trim(), password.trim())
       if (useAuthStore.getState().authMode === 'authenticated') {
-        onOpenChange(false)
+        handleAuthSuccess()
       }
     }
   }
@@ -36,6 +47,9 @@ export function LoginDialog({ open, onOpenChange }: LoginDialogProps) {
     e.preventDefault()
     if (email.trim() && password.trim()) {
       await register(email.trim(), password.trim())
+      if (useAuthStore.getState().authMode === 'authenticated') {
+        handleAuthSuccess()
+      }
     }
   }
 
@@ -43,12 +57,13 @@ export function LoginDialog({ open, onOpenChange }: LoginDialogProps) {
     e.preventDefault()
     if (email.trim()) {
       await loginWithMagicLink(email.trim())
+      // Magic link doesn't authenticate immediately – user needs to click the email link
     }
   }
 
   const handleSkip = () => {
     skip()
-    onOpenChange(false)
+    handleAuthSuccess()
   }
 
   const handleOAuth = async (provider: 'google' | 'github') => {
@@ -60,13 +75,13 @@ export function LoginDialog({ open, onOpenChange }: LoginDialogProps) {
       <DialogContent onClose={() => onOpenChange(false)}>
         <DialogHeader>
           <div className="flex items-center gap-2 mb-2">
-            <div className="h-9 w-9 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center">
+            <div className="h-9 w-9 rounded-lg bg-gradient-to-br from-teal-500 to-emerald-600 flex items-center justify-center">
               <Home className="h-4 w-4 text-white" />
             </div>
             <DialogTitle>WasImmoWert</DialogTitle>
           </div>
           <p className="text-sm text-muted-foreground">
-            Melden Sie sich an, um Ihre Projekte zu speichern und alle Funktionen zu nutzen.
+            {subtitle || 'Melden Sie sich an, um Ihre Projekte zu speichern und alle Funktionen zu nutzen.'}
           </p>
         </DialogHeader>
 
@@ -180,7 +195,7 @@ export function LoginDialog({ open, onOpenChange }: LoginDialogProps) {
               />
             </div>
             <DialogFooter className="flex-col gap-2 sm:flex-col p-0 pt-2">
-              <Button type="submit" className="w-full bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white border-0" disabled={loading}>
+              <Button type="submit" className="w-full bg-gradient-to-r from-teal-500 to-emerald-600 hover:from-teal-600 hover:to-emerald-700 text-white border-0" disabled={loading}>
                 {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <LogIn className="h-4 w-4" />}
                 Anmelden
               </Button>
@@ -195,6 +210,16 @@ export function LoginDialog({ open, onOpenChange }: LoginDialogProps) {
         {/* Register Form */}
         {tab === 'register' && (
           <form onSubmit={handleRegister} className="space-y-3 mt-3">
+            <div>
+              <label className="text-sm font-medium block mb-1.5">Vorname</label>
+              <input
+                type="text"
+                value={firstName}
+                onChange={(e) => setFirstName(e.target.value)}
+                placeholder="Max"
+                className="w-full rounded-md border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+              />
+            </div>
             <div>
               <label className="text-sm font-medium block mb-1.5">E-Mail</label>
               <input
@@ -218,8 +243,23 @@ export function LoginDialog({ open, onOpenChange }: LoginDialogProps) {
                 required
               />
             </div>
+            <label className="flex items-start gap-2 text-xs text-muted-foreground cursor-pointer">
+              <input
+                type="checkbox"
+                checked={agbAccepted}
+                onChange={(e) => setAgbAccepted(e.target.checked)}
+                className="mt-0.5 rounded border-border"
+                required
+              />
+              <span>
+                Ich akzeptiere die{' '}
+                <a href="/legal/agb" target="_blank" className="text-primary underline">AGB</a>
+                {' '}und{' '}
+                <a href="/legal/datenschutz" target="_blank" className="text-primary underline">Datenschutzerklärung</a>
+              </span>
+            </label>
             <DialogFooter className="flex-col gap-2 sm:flex-col p-0 pt-2">
-              <Button type="submit" className="w-full bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white border-0" disabled={loading}>
+              <Button type="submit" className="w-full bg-gradient-to-r from-teal-500 to-emerald-600 hover:from-teal-600 hover:to-emerald-700 text-white border-0" disabled={loading || !agbAccepted}>
                 {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <UserPlus className="h-4 w-4" />}
                 Konto erstellen
               </Button>
@@ -249,7 +289,7 @@ export function LoginDialog({ open, onOpenChange }: LoginDialogProps) {
               Wir senden Ihnen einen Anmelde-Link per E-Mail. Kein Passwort nötig.
             </p>
             <DialogFooter className="flex-col gap-2 sm:flex-col p-0 pt-2">
-              <Button type="submit" className="w-full bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white border-0" disabled={loading}>
+              <Button type="submit" className="w-full bg-gradient-to-r from-teal-500 to-emerald-600 hover:from-teal-600 hover:to-emerald-700 text-white border-0" disabled={loading}>
                 {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Mail className="h-4 w-4" />}
                 Magic Link senden
               </Button>

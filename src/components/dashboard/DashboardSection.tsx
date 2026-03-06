@@ -1,8 +1,6 @@
-import { useState, type ReactNode } from 'react'
+import type { ReactNode } from 'react'
 import { useDashboardStore } from '@/store/useDashboardStore'
-import { AddWidgetPopup } from './AddWidgetPopup'
-import { Button } from '@/components/ui/button'
-import { GripVertical, X, Plus, RotateCcw } from 'lucide-react'
+import { GripVertical, X } from 'lucide-react'
 import {
   DndContext,
   closestCenter,
@@ -68,8 +66,8 @@ interface DashboardSectionProps {
 }
 
 export function DashboardSection({ renderWidget }: DashboardSectionProps) {
-  const { overviewWidgets, addWidget, removeWidget, reorderWidgets, resetToDefaults } = useDashboardStore()
-  const [addPopupOpen, setAddPopupOpen] = useState(false)
+  const { getWidgetsForSection, toggleWidget, reorderWidgets } = useDashboardStore()
+  const enabledWidgets = getWidgetsForSection('uebersicht')
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 10 } }),
@@ -78,66 +76,35 @@ export function DashboardSection({ renderWidget }: DashboardSectionProps) {
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event
     if (!over || active.id === over.id) return
-    const oldIndex = overviewWidgets.indexOf(active.id as string)
-    const newIndex = overviewWidgets.indexOf(over.id as string)
+    const oldIndex = enabledWidgets.indexOf(active.id as string)
+    const newIndex = enabledWidgets.indexOf(over.id as string)
     if (oldIndex === -1 || newIndex === -1) return
-    const newOrder = [...overviewWidgets]
+    const newOrder = [...enabledWidgets]
     newOrder.splice(oldIndex, 1)
     newOrder.splice(newIndex, 0, active.id as string)
-    reorderWidgets(newOrder)
+    reorderWidgets('uebersicht', newOrder)
   }
 
   return (
-    <>
-      <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-        <SortableContext items={overviewWidgets} strategy={verticalListSortingStrategy}>
-          <div className="space-y-6">
-            {overviewWidgets.map((widgetId) => {
-              const content = renderWidget(widgetId)
-              if (!content) return null
-              return (
-                <SortableWidget
-                  key={widgetId}
-                  id={widgetId}
-                  onRemove={() => removeWidget(widgetId)}
-                  isRemovable={widgetId !== 'kpiOverview'}
-                >
-                  {content}
-                </SortableWidget>
-              )
-            })}
-          </div>
-        </SortableContext>
-      </DndContext>
-
-      {/* Add widget + Reset buttons */}
-      <div className="flex items-center gap-2 pt-4">
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => setAddPopupOpen(true)}
-          className="gap-1.5"
-        >
-          <Plus className="h-3.5 w-3.5" />
-          Widget hinzufügen
-        </Button>
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={resetToDefaults}
-          className="gap-1.5 text-muted-foreground"
-        >
-          <RotateCcw className="h-3.5 w-3.5" />
-          Zurücksetzen
-        </Button>
-      </div>
-
-      <AddWidgetPopup
-        open={addPopupOpen}
-        onOpenChange={setAddPopupOpen}
-        existingWidgets={overviewWidgets}
-        onAdd={addWidget}
-      />
-    </>
+    <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+      <SortableContext items={enabledWidgets} strategy={verticalListSortingStrategy}>
+        <div className="space-y-6">
+          {enabledWidgets.map((widgetId) => {
+            const content = renderWidget(widgetId)
+            if (!content) return null
+            return (
+              <SortableWidget
+                key={widgetId}
+                id={widgetId}
+                onRemove={() => toggleWidget('uebersicht', widgetId)}
+                isRemovable={widgetId !== 'kpiOverview'}
+              >
+                {content}
+              </SortableWidget>
+            )
+          })}
+        </div>
+      </SortableContext>
+    </DndContext>
   )
 }

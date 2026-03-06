@@ -56,6 +56,8 @@ export function createDefaultProject(overrides: Partial<Project> = {}): Project 
     zinsbindungPeriods: [],
     nutzungsart: 'vermietung',
     ersparteMiete: 0,
+    isMehrfamilienhaus: false,
+    wohnungen: [],
     monatsmieteKalt: 800,
     mietausfallwagnis: DEFAULT_VALUES.mietausfallwagnis,
     nebenkostenProQm: DEFAULT_VALUES.nebenkostenProQm,

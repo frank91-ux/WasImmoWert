@@ -2,7 +2,7 @@ import type { YearlyProjection, ZinsbindungPeriod } from '@/calc/types'
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, ReferenceLine } from 'recharts'
 import { ChartCard } from './ChartCard'
 import { formatEur } from '@/lib/format'
-import { TOOLTIP_STYLE, AXIS_TICK, GRID_STYLE, LEGEND_STYLE, ANIMATION_DURATION, ZINSBINDUNG_LEGEND_ENTRY } from './chartTheme'
+import { TOOLTIP_STYLE, AXIS_TICK, GRID_STYLE, LEGEND_STYLE, ANIMATION_DURATION, ZINSBINDUNG_LEGEND_ENTRY, CHART_COLORS } from './chartTheme'
 
 interface EquityGrowthChartProps {
   projection: YearlyProjection[]
@@ -56,9 +56,9 @@ export function EquityGrowthChart({ projection, zinsbindung, zinsbindungPeriods 
               iconSize={12}
               wrapperStyle={LEGEND_STYLE}
               payload={[
-                { value: 'Eigenkapital', type: 'line', color: 'var(--color-primary)', id: 'eigenkapital' },
-                { value: 'Immobilienwert', type: 'line', color: '#16a34a', id: 'immobilienWert' },
-                { value: 'Restschuld', type: 'line', color: '#ef4444', id: 'restschuld' },
+                { value: 'Eigenkapital', type: 'line', color: CHART_COLORS.primary, id: 'eigenkapital' },
+                { value: 'Immobilienwert', type: 'line', color: CHART_COLORS.positive, id: 'immobilienWert' },
+                { value: 'Restschuld', type: 'line', color: CHART_COLORS.negative, id: 'restschuld' },
                 ...(zinsBoundaries.length > 0 ? [ZINSBINDUNG_LEGEND_ENTRY] : []),
               ]}
             />
@@ -66,13 +66,13 @@ export function EquityGrowthChart({ projection, zinsbindung, zinsbindungPeriods 
               <ReferenceLine
                 key={`zb-${b.year}`}
                 x={`Jahr ${b.year}`}
-                stroke="#f59e0b"
+                stroke={CHART_COLORS.warning}
                 strokeDasharray="6 3"
                 strokeWidth={2}
                 label={{
                   value: b.label,
                   position: 'top',
-                  fill: '#f59e0b',
+                  fill: CHART_COLORS.warning,
                   fontSize: 10,
                   fontWeight: 600,
                 }}
@@ -80,19 +80,19 @@ export function EquityGrowthChart({ projection, zinsbindung, zinsbindungPeriods 
             ))}
             <defs>
               <linearGradient id="gradEk" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="var(--color-primary)" stopOpacity={0.3} />
-                <stop offset="95%" stopColor="var(--color-primary)" stopOpacity={0.02} />
+                <stop offset="5%" stopColor={CHART_COLORS.primary} stopOpacity={0.3} />
+                <stop offset="95%" stopColor={CHART_COLORS.primary} stopOpacity={0.02} />
               </linearGradient>
               <linearGradient id="gradDebt" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#ef4444" stopOpacity={0.2} />
-                <stop offset="95%" stopColor="#ef4444" stopOpacity={0.02} />
+                <stop offset="5%" stopColor={CHART_COLORS.negative} stopOpacity={0.2} />
+                <stop offset="95%" stopColor={CHART_COLORS.negative} stopOpacity={0.02} />
               </linearGradient>
             </defs>
             <Area
               type="monotone"
               dataKey="immobilienWert"
               fill="none"
-              stroke="#16a34a"
+              stroke={CHART_COLORS.positive}
               strokeWidth={2}
               strokeDasharray="6 3"
               animationDuration={ANIMATION_DURATION}
@@ -101,7 +101,7 @@ export function EquityGrowthChart({ projection, zinsbindung, zinsbindungPeriods 
               type="monotone"
               dataKey="eigenkapital"
               fill="url(#gradEk)"
-              stroke="var(--color-primary)"
+              stroke={CHART_COLORS.primary}
               strokeWidth={2}
               animationDuration={ANIMATION_DURATION}
             />
@@ -109,7 +109,7 @@ export function EquityGrowthChart({ projection, zinsbindung, zinsbindungPeriods 
               type="monotone"
               dataKey="restschuld"
               fill="url(#gradDebt)"
-              stroke="#ef4444"
+              stroke={CHART_COLORS.negative}
               strokeWidth={2}
               animationDuration={ANIMATION_DURATION}
             />

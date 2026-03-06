@@ -24,6 +24,7 @@ const numberFormatter = new Intl.NumberFormat('de-DE', {
 })
 
 export function formatEur(value: number): string {
+  if (value == null || !isFinite(value)) return '0 €'
   return eurFormatter.format(value)
 }
 
@@ -32,6 +33,7 @@ export function formatEurDetail(value: number): string {
 }
 
 export function formatPercent(value: number): string {
+  if (value == null || !isFinite(value)) return '0,0 %'
   return percentFormatter.format(value / 100)
 }
 

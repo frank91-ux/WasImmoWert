@@ -1,13 +1,14 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
 import { useProjectStore } from '@/store/useProjectStore'
 import { useNavigate, useParams, useLocation } from 'react-router-dom'
+import { usePlan } from '@/hooks/usePlan'
 import { Button } from '@/components/ui/button'
 import {
   Plus, Building2, GitCompare, LayoutDashboard, FolderOpen,
   GripVertical, Pencil, Copy, Trash2, Settings, Search,
   TrendingUp, DollarSign, BarChart3, MapPin, ChevronLeft,
   ChevronRight as ChevronRightIcon,
-  PieChart, Receipt, FileText, LineChart, Briefcase,
+  PieChart, Receipt, FileText, LineChart, Briefcase, HelpCircle, UserCircle,
 } from 'lucide-react'
 import { SettingsPanel } from '@/components/shared/SettingsPanel'
 import { cn } from '@/lib/utils'
@@ -99,7 +100,7 @@ function SortableProjectItem({
             <GripVertical className="h-3.5 w-3.5" />
           </span>
         )}
-        <Building2 className="h-4 w-4 shrink-0" />
+        <Search className="h-4 w-4 shrink-0" />
         {!collapsed && (
           isRenaming ? (
             <input
@@ -129,6 +130,7 @@ export function Sidebar() {
   const navigate = useNavigate()
   const location = useLocation()
   const { id: currentId } = useParams()
+  const { plan } = usePlan()
 
   const [collapsed, setCollapsed] = useState(false)
   const [settingsOpen, setSettingsOpen] = useState(false)
@@ -231,6 +233,36 @@ export function Sidebar() {
     ? projects.filter(p => p.name.toLowerCase().includes(searchQuery.toLowerCase()))
     : projects
 
+  // Split filtered projects into non-portfolio and portfolio
+  const nonPortfolioProjects = filteredProjects.filter(p => !p.isInPortfolio)
+  const portfolioProjects = filteredProjects.filter(p => p.isInPortfolio)
+
+  /* ─── Plan Badge ─── */
+  const getPlanBadge = () => {
+    if (plan === 'lifetime') {
+      return (
+        <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-amber-100/20 border border-amber-200/50">
+          <div className="w-2 h-2 rounded-full bg-amber-500" />
+          {!collapsed && <span className="text-xs font-medium text-amber-700">Lifetime</span>}
+        </div>
+      )
+    } else if (plan === 'pro') {
+      return (
+        <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-teal-100/20 border border-teal-200/50">
+          <div className="w-2 h-2 rounded-full bg-teal-500" />
+          {!collapsed && <span className="text-xs font-medium text-teal-700">Pro</span>}
+        </div>
+      )
+    } else {
+      return (
+        <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-gray-100/20 border border-gray-200/50">
+          <div className="w-2 h-2 rounded-full bg-gray-500" />
+          {!collapsed && <span className="text-xs font-medium text-gray-700">Free</span>}
+        </div>
+      )
+    }
+  }
+
   return (
     <aside
       className={cn(
@@ -240,7 +272,7 @@ export function Sidebar() {
     >
       {/* Logo */}
       <div className={cn('flex items-center gap-3 px-4 h-16 shrink-0', collapsed && 'justify-center px-2')}>
-        <div className="h-9 w-9 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shrink-0">
+        <div className="h-9 w-9 rounded-lg bg-gradient-to-br from-teal-500 to-emerald-600 flex items-center justify-center shrink-0">
           <Building2 className="h-5 w-5 text-white" />
         </div>
         {!collapsed && (
@@ -269,18 +301,19 @@ export function Sidebar() {
 
       {/* Navigation */}
       <nav className="flex-1 overflow-auto px-2 space-y-4">
-        {/* PROJEKTE section — ganz oben */}
-        {projects.length > 0 && (
+        {/* BEWERTUNGEN section — non-portfolio projects (potential investments to evaluate) */}
+        {nonPortfolioProjects.length > 0 && (
           <>
             {!collapsed && (
-              <div className="px-2 pt-2 text-[10px] font-semibold uppercase tracking-[0.1em] text-sidebar-foreground/40">
-                Projekte
+              <div className="px-2 pt-2 pb-1 text-[10px] font-semibold uppercase tracking-[0.1em] text-sidebar-foreground/40 flex items-center gap-1.5">
+                <Search className="h-3 w-3" />
+                Bewertungen
               </div>
             )}
             <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-              <SortableContext items={filteredProjects.map((p) => p.id)} strategy={verticalListSortingStrategy}>
+              <SortableContext items={nonPortfolioProjects.map((p) => p.id)} strategy={verticalListSortingStrategy}>
                 <ul className="space-y-0.5">
-                  {filteredProjects.map((p) => (
+                  {nonPortfolioProjects.map((p) => (
                     <SortableProjectItem
                       key={p.id}
                       project={p}
@@ -301,6 +334,46 @@ export function Sidebar() {
           </>
         )}
 
+        {/* MEIN PORTFOLIO section — owned properties */}
+        <>
+          {!collapsed && nonPortfolioProjects.length > 0 && (
+            <div className="mx-2 mt-2 border-t border-white/10" />
+          )}
+          {!collapsed && (
+            <div className="px-2 pt-2 pb-1 text-[10px] font-semibold uppercase tracking-[0.1em] text-sidebar-foreground/40 flex items-center justify-between">
+              <span className="flex items-center gap-1.5"><Briefcase className="h-3 w-3" /> Mein Portfolio</span>
+              <button
+                onClick={() => navigate('/portfolio')}
+                className="text-[10px] font-semibold text-teal-500 hover:text-teal-400 transition-colors"
+                title="Zur Portfolio-Übersicht"
+              >
+                Alle
+              </button>
+            </div>
+          )}
+          {portfolioProjects.length > 0 ? (
+            <ul className="space-y-0.5">
+              {portfolioProjects.map((p) => (
+                <li key={p.id}>
+                  <button
+                    className={cn(
+                      'sidebar-nav-item',
+                      currentId === p.id && 'active',
+                    )}
+                    onClick={() => { setActiveProject(p.id); navigate(`/projects/${p.id}`) }}
+                    title={collapsed ? p.name : undefined}
+                  >
+                    <Briefcase className="h-4 w-4 shrink-0" />
+                    {!collapsed && <span className="truncate">{p.name}</span>}
+                  </button>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            !collapsed && <div className="px-2 py-2 text-xs text-sidebar-foreground/50">Keine Projekte im Portfolio</div>
+          )}
+        </>
+
         {/* ÜBERSICHT section */}
         {!collapsed && (
           <div className="px-2 pt-2 text-[10px] font-semibold uppercase tracking-[0.1em] text-sidebar-foreground/40">
@@ -309,20 +382,28 @@ export function Sidebar() {
         )}
         <div className="space-y-0.5">
           <button
-            className={cn('sidebar-nav-item', isActive('/projects') && location.pathname === '/projects' && 'active')}
-            onClick={() => navigate('/projects')}
+            className={cn('sidebar-nav-item', location.pathname === '/' && 'active')}
+            onClick={() => navigate('/')}
             title={collapsed ? 'Dashboard' : undefined}
           >
             <LayoutDashboard className="h-4 w-4 shrink-0" />
             {!collapsed && <span>Dashboard</span>}
           </button>
           <button
-            className={cn('sidebar-nav-item', isActive('/projects/new') && 'active')}
-            onClick={() => navigate('/projects/new')}
-            title={collapsed ? 'Bewertung' : undefined}
+            className={cn('sidebar-nav-item', isActive('/bewertungen') && 'active')}
+            onClick={() => navigate('/bewertungen')}
+            title={collapsed ? 'Meine Bewertungen' : undefined}
           >
-            <TrendingUp className="h-4 w-4 shrink-0" />
-            {!collapsed && <span>Bewertung</span>}
+            <Search className="h-4 w-4 shrink-0" />
+            {!collapsed && <span>Meine Bewertungen</span>}
+          </button>
+          <button
+            className={cn('sidebar-nav-item', location.pathname === '/portfolio' && 'active')}
+            onClick={() => navigate('/portfolio')}
+            title={collapsed ? 'Mein Portfolio' : undefined}
+          >
+            <Briefcase className="h-4 w-4 shrink-0" />
+            {!collapsed && <span>Mein Portfolio</span>}
           </button>
           <button
             className={cn('sidebar-nav-item', isActive('/compare') && 'active')}
@@ -334,56 +415,6 @@ export function Sidebar() {
           </button>
         </div>
 
-        {/* FINANZEN section */}
-        {!collapsed && (
-          <div className="px-2 pt-2 text-[10px] font-semibold uppercase tracking-[0.1em] text-sidebar-foreground/40">
-            Finanzen
-          </div>
-        )}
-        <div className="space-y-0.5">
-          <button
-            className={cn('sidebar-nav-item', isActive('/portfolio') && 'active')}
-            onClick={() => navigate('/portfolio')}
-            title={collapsed ? 'Portfolio' : undefined}
-          >
-            <Briefcase className="h-4 w-4 shrink-0" />
-            {!collapsed && <span>Portfolio</span>}
-          </button>
-          {!collapsed && projects.filter((p) => p.isInPortfolio).length > 0 && (
-            <ul className="ml-2 space-y-0.5">
-              {projects.filter((p) => p.isInPortfolio).map((p) => (
-                <li key={p.id}>
-                  <button
-                    className={cn(
-                      'sidebar-nav-item text-xs py-1.5',
-                      currentId === p.id && 'active',
-                    )}
-                    onClick={() => { setActiveProject(p.id); navigate(`/projects/${p.id}`) }}
-                  >
-                    <Building2 className="h-3.5 w-3.5 shrink-0" />
-                    <span className="truncate">{p.name}</span>
-                  </button>
-                </li>
-              ))}
-            </ul>
-          )}
-          <button
-            className="sidebar-nav-item"
-            onClick={() => navigate('/projects')}
-            title={collapsed ? 'Einnahmen' : undefined}
-          >
-            <DollarSign className="h-4 w-4 shrink-0" />
-            {!collapsed && <span>Einnahmen</span>}
-          </button>
-          <button
-            className="sidebar-nav-item"
-            onClick={() => navigate('/projects')}
-            title={collapsed ? 'Ausgaben' : undefined}
-          >
-            <Receipt className="h-4 w-4 shrink-0" />
-            {!collapsed && <span>Ausgaben</span>}
-          </button>
-        </div>
       </nav>
 
       {/* New project button */}
@@ -391,7 +422,7 @@ export function Sidebar() {
         <Button
           onClick={handleNewProject}
           className={cn(
-            'w-full bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white border-0',
+            'w-full bg-gradient-to-r from-teal-500 to-emerald-600 hover:from-teal-600 hover:to-emerald-700 text-white border-0',
             collapsed && 'px-0'
           )}
           size="sm"
@@ -401,8 +432,21 @@ export function Sidebar() {
         </Button>
       </div>
 
-      {/* Bottom: Settings + Collapse */}
+      {/* Plan Badge */}
+      <div className="px-3 py-2">
+        {getPlanBadge()}
+      </div>
+
+      {/* Bottom: Account + Settings + Help + Collapse */}
       <div className="border-t border-white/10 p-2 space-y-0.5">
+        <button
+          className={cn('sidebar-nav-item', isActive('/account') && 'active')}
+          onClick={() => navigate('/account')}
+          title={collapsed ? 'Mein Konto' : undefined}
+        >
+          <UserCircle className="h-4 w-4 shrink-0" />
+          {!collapsed && <span>Mein Konto</span>}
+        </button>
         <button
           className="sidebar-nav-item"
           onClick={() => setSettingsOpen(true)}
@@ -410,6 +454,14 @@ export function Sidebar() {
         >
           <Settings className="h-4 w-4 shrink-0" />
           {!collapsed && <span>Einstellungen</span>}
+        </button>
+        <button
+          className="sidebar-nav-item"
+          onClick={() => navigate('/help/support')}
+          title={collapsed ? 'Hilfe & Support' : undefined}
+        >
+          <HelpCircle className="h-4 w-4 shrink-0" />
+          {!collapsed && <span>Hilfe & Support</span>}
         </button>
         <button
           className="sidebar-nav-item"

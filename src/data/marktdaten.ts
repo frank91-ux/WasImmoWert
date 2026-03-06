@@ -89,6 +89,49 @@ export const LEGENDE_KAUF = [
   { label: '> 10.000 €', farbe: '#991b1b' },
 ]
 
+// --- Bundesland-Level Durchschnittsdaten (Mock, Stand 2025) ---
+
+export interface BundeslandMarktdaten {
+  kaufpreisProQm: number   // €/m² Wohnungen (Durchschnitt)
+  mietpreisProQm: number   // €/m² Kaltmiete (Durchschnitt)
+  trendKauf: number        // % YoY Kaufpreis
+  trendMiete: number       // % YoY Miete
+}
+
+const BUNDESLAND_MARKTDATEN: Record<string, BundeslandMarktdaten> = {
+  'bayern':                { kaufpreisProQm: 4850, mietpreisProQm: 12.80, trendKauf: 2.5, trendMiete: 3.0 },
+  'berlin':                { kaufpreisProQm: 4600, mietpreisProQm: 11.90, trendKauf: 1.8, trendMiete: 4.2 },
+  'baden-wuerttemberg':    { kaufpreisProQm: 4200, mietpreisProQm: 11.50, trendKauf: 1.5, trendMiete: 2.8 },
+  'brandenburg':           { kaufpreisProQm: 2800, mietpreisProQm: 8.20,  trendKauf: 3.5, trendMiete: 4.0 },
+  'bremen':                { kaufpreisProQm: 2400, mietpreisProQm: 8.90,  trendKauf: 1.0, trendMiete: 2.5 },
+  'hamburg':               { kaufpreisProQm: 5600, mietpreisProQm: 13.50, trendKauf: 1.2, trendMiete: 3.5 },
+  'hessen':                { kaufpreisProQm: 3800, mietpreisProQm: 11.00, trendKauf: 1.0, trendMiete: 2.5 },
+  'mecklenburg-vorpommern':{ kaufpreisProQm: 2200, mietpreisProQm: 7.50,  trendKauf: 4.0, trendMiete: 3.0 },
+  'niedersachsen':         { kaufpreisProQm: 2600, mietpreisProQm: 8.50,  trendKauf: 1.5, trendMiete: 2.0 },
+  'nordrhein-westfalen':   { kaufpreisProQm: 2900, mietpreisProQm: 9.20,  trendKauf: 0.8, trendMiete: 2.5 },
+  'rheinland-pfalz':       { kaufpreisProQm: 2300, mietpreisProQm: 8.00,  trendKauf: 1.0, trendMiete: 1.8 },
+  'saarland':              { kaufpreisProQm: 1800, mietpreisProQm: 7.20,  trendKauf: 0.5, trendMiete: 1.5 },
+  'sachsen':               { kaufpreisProQm: 2500, mietpreisProQm: 7.80,  trendKauf: 3.0, trendMiete: 3.5 },
+  'sachsen-anhalt':        { kaufpreisProQm: 1600, mietpreisProQm: 6.50,  trendKauf: 2.5, trendMiete: 2.0 },
+  'schleswig-holstein':    { kaufpreisProQm: 3000, mietpreisProQm: 9.50,  trendKauf: 2.0, trendMiete: 2.5 },
+  'thueringen':            { kaufpreisProQm: 1700, mietpreisProQm: 6.80,  trendKauf: 1.5, trendMiete: 2.0 },
+}
+
+const DEFAULT_MARKT: BundeslandMarktdaten = {
+  kaufpreisProQm: 3200,
+  mietpreisProQm: 9.50,
+  trendKauf: 1.5,
+  trendMiete: 2.5,
+}
+
+/**
+ * Returns average market data for a given Bundesland.
+ * Falls back to national average if Bundesland is unknown.
+ */
+export function getMarktdatenForBundesland(bundesland: string): BundeslandMarktdaten {
+  return BUNDESLAND_MARKTDATEN[bundesland] ?? DEFAULT_MARKT
+}
+
 export const LEGENDE_MIETE = [
   { label: '< 10 €', farbe: '#22c55e' },
   { label: '10–12 €', farbe: '#84cc16' },
@@ -111,12 +154,26 @@ export interface MarktvergleichResult {
   verfuegbar: boolean           // Marktdaten verfügbar?
 }
 
+/** Haversine distance in km between two lat/lng pairs */
+function haversine(lat1: number, lng1: number, lat2: number, lng2: number): number {
+  const R = 6371
+  const dLat = (lat2 - lat1) * Math.PI / 180
+  const dLng = (lng2 - lng1) * Math.PI / 180
+  const a = Math.sin(dLat / 2) ** 2 + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLng / 2) ** 2
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
+}
+
+const MARKT_RADIUS_KM = 8
+
 /**
  * Berechnet den Marktvergleich für ein Projekt basierend auf den Regionaldaten.
+ * Wenn Koordinaten übergeben werden, werden nur nahegelegene Stadtteile (≤8km) berücksichtigt.
  */
 export function berechneMarktvergleich(
   kaufpreisProQm: number,
   mietpreisProQm: number,
+  lat?: number | null,
+  lng?: number | null,
 ): MarktvergleichResult {
   if (MARKTDATEN.length === 0 || kaufpreisProQm <= 0) {
     return {
@@ -131,8 +188,14 @@ export function berechneMarktvergleich(
     }
   }
 
-  const durchschnittKauf = MARKTDATEN.reduce((s, d) => s + d.kaufpreisProQm, 0) / MARKTDATEN.length
-  const durchschnittMiete = MARKTDATEN.reduce((s, d) => s + d.mietpreisProQm, 0) / MARKTDATEN.length
+  // Filter by proximity if coordinates available
+  const relevantDaten = (lat != null && lng != null)
+    ? MARKTDATEN.filter(d => haversine(lat, lng, d.lat, d.lng) <= MARKT_RADIUS_KM)
+    : MARKTDATEN
+  const data = relevantDaten.length > 0 ? relevantDaten : MARKTDATEN
+
+  const durchschnittKauf = data.reduce((s, d) => s + d.kaufpreisProQm, 0) / data.length
+  const durchschnittMiete = data.reduce((s, d) => s + d.mietpreisProQm, 0) / data.length
 
   const abweichungKaufAbsolut = kaufpreisProQm - durchschnittKauf
   const abweichungKaufProzent = durchschnittKauf > 0 ? (abweichungKaufAbsolut / durchschnittKauf) * 100 : 0

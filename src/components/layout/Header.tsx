@@ -1,9 +1,9 @@
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { ThemeToggle } from '@/components/shared/ThemeToggle'
 import { ModeToggle } from '@/components/shared/ModeToggle'
 import {
   Home, Menu, X, Plus, Building2, FolderOpen, GitCompare, LogOut,
-  Search, Bell, Moon, Sun, User,
+  Search, Bell, Moon, Sun, User, UserCircle, CreditCard, Settings,
 } from 'lucide-react'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { useProjectStore } from '@/store/useProjectStore'
@@ -24,6 +24,20 @@ function getPageTitle(pathname: string) {
 export function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [searchFocused, setSearchFocused] = useState(false)
+  const [accountMenuOpen, setAccountMenuOpen] = useState(false)
+  const accountMenuRef = useRef<HTMLDivElement>(null)
+
+  // Close account dropdown on outside click
+  useEffect(() => {
+    if (!accountMenuOpen) return
+    const handler = (e: MouseEvent) => {
+      if (accountMenuRef.current && !accountMenuRef.current.contains(e.target as Node)) {
+        setAccountMenuOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handler)
+    return () => document.removeEventListener('mousedown', handler)
+  }, [accountMenuOpen])
   const navigate = useNavigate()
   const location = useLocation()
   const { projects, addProject } = useProjectStore()
@@ -58,7 +72,7 @@ export function Header() {
 
           {/* Logo for mobile */}
           <Link to="/" className="lg:hidden flex items-center gap-2 font-bold text-lg">
-            <div className="h-7 w-7 rounded-md bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center">
+            <div className="h-7 w-7 rounded-md bg-gradient-to-br from-teal-500 to-emerald-600 flex items-center justify-center">
               <Building2 className="h-4 w-4 text-white" />
             </div>
           </Link>
@@ -101,25 +115,57 @@ export function Header() {
 
           <div className="hidden sm:block h-6 w-px bg-border mx-1" />
 
-          {/* User avatar */}
-          <div className="flex items-center gap-2">
-            <div className="h-8 w-8 rounded-full bg-gradient-to-br from-emerald-400 to-teal-600 flex items-center justify-center text-xs font-bold text-white">
-              {initials}
-            </div>
-            {authMode === 'authenticated' && email && (
-              <div className="hidden sm:block text-right">
-                <div className="text-xs font-medium leading-tight">{displayName}</div>
-                <div className="text-[10px] text-muted-foreground leading-tight">Investor</div>
+          {/* User avatar + dropdown */}
+          <div className="relative" ref={accountMenuRef}>
+            <button
+              className="flex items-center gap-2 p-1 rounded-lg hover:bg-muted transition-colors"
+              onClick={() => setAccountMenuOpen(!accountMenuOpen)}
+            >
+              <div className="h-8 w-8 rounded-full bg-gradient-to-br from-emerald-400 to-teal-600 flex items-center justify-center text-xs font-bold text-white">
+                {initials}
+              </div>
+              {authMode === 'authenticated' && email && (
+                <div className="hidden sm:block text-right">
+                  <div className="text-xs font-medium leading-tight">{displayName}</div>
+                  <div className="text-[10px] text-muted-foreground leading-tight">Investor</div>
+                </div>
+              )}
+            </button>
+
+            {accountMenuOpen && (
+              <div className="absolute right-0 top-full mt-2 w-56 rounded-xl border bg-card shadow-lg py-1.5 z-50">
+                <div className="px-3 py-2 border-b mb-1">
+                  <div className="text-sm font-medium">{displayName}</div>
+                  {email && <div className="text-xs text-muted-foreground">{email}</div>}
+                </div>
+                <button
+                  className="flex items-center gap-2.5 w-full px-3 py-2 text-sm hover:bg-muted transition-colors"
+                  onClick={() => { setAccountMenuOpen(false); navigate('/account') }}
+                >
+                  <UserCircle className="h-4 w-4 text-muted-foreground" /> Mein Konto
+                </button>
+                <button
+                  className="flex items-center gap-2.5 w-full px-3 py-2 text-sm hover:bg-muted transition-colors"
+                  onClick={() => { setAccountMenuOpen(false); navigate('/account') }}
+                >
+                  <CreditCard className="h-4 w-4 text-muted-foreground" /> Plan verwalten
+                </button>
+                <button
+                  className="flex items-center gap-2.5 w-full px-3 py-2 text-sm hover:bg-muted transition-colors"
+                  onClick={() => { setAccountMenuOpen(false); navigate('/account') }}
+                >
+                  <Settings className="h-4 w-4 text-muted-foreground" /> Einstellungen
+                </button>
+                <div className="border-t mt-1 pt-1">
+                  <button
+                    className="flex items-center gap-2.5 w-full px-3 py-2 text-sm text-red-500 hover:bg-red-50 dark:hover:bg-red-950/20 transition-colors"
+                    onClick={() => { setAccountMenuOpen(false); logout(); navigate('/') }}
+                  >
+                    <LogOut className="h-4 w-4" /> Abmelden
+                  </button>
+                </div>
               </div>
             )}
-            <button
-              className="p-1.5 rounded-md hover:bg-muted transition-colors text-muted-foreground hover:text-foreground"
-              onClick={() => { logout(); navigate('/') }}
-              aria-label="Abmelden"
-              title="Abmelden"
-            >
-              <LogOut className="h-4 w-4" />
-            </button>
           </div>
         </div>
       </div>
@@ -159,7 +205,7 @@ export function Header() {
             <GitCompare className="h-4 w-4" /> Vergleichen
           </button>
           <button
-            className="flex items-center gap-2 w-full rounded-lg px-3 py-2.5 text-sm font-medium bg-gradient-to-r from-indigo-500 to-purple-600 text-white"
+            className="flex items-center gap-2 w-full rounded-lg px-3 py-2.5 text-sm font-medium bg-gradient-to-r from-teal-500 to-emerald-600 text-white"
             onClick={handleNewProject}
           >
             <Plus className="h-4 w-4" /> Neues Projekt

@@ -5,7 +5,8 @@ import { Dialog, DialogHeader, DialogTitle, DialogContent, DialogFooter } from '
 import { CurrencyInput } from '@/components/shared/CurrencyInput'
 import { Button } from '@/components/ui/button'
 import { formatEur } from '@/lib/format'
-import { Wallet } from 'lucide-react'
+import { Wallet, HelpCircle } from 'lucide-react'
+import { KpiInfoDialog } from './KpiInfoDialog'
 
 interface LeistbarkeitsCheckProps {
   project: Project
@@ -17,6 +18,7 @@ export function LeistbarkeitsCheck({ project, result, onChange }: LeistbarkeitsC
   const [showIncomeDialog, setShowIncomeDialog] = useState(false)
   const [tempGehalt, setTempGehalt] = useState(48000)
   const [tempAusgaben, setTempAusgaben] = useState(1500)
+  const [showKpiInfo, setShowKpiInfo] = useState(false)
 
   if (project.nutzungsart !== 'eigennutzung') return null
 
@@ -87,15 +89,19 @@ export function LeistbarkeitsCheck({ project, result, onChange }: LeistbarkeitsC
               />
             </div>
 
-            <div className="flex items-center gap-3">
-              <div className={`w-4 h-4 rounded-full ${ampelColor}`} />
-              <div>
+            <button
+              className="flex items-center gap-3 w-full text-left group cursor-pointer hover:bg-muted/50 rounded-md px-2 py-1.5 -mx-2 transition-colors"
+              onClick={() => setShowKpiInfo(true)}
+            >
+              <div className={`w-4 h-4 rounded-full ${ampelColor} shrink-0`} />
+              <div className="flex items-center gap-1.5">
                 <span className="font-semibold text-sm">{ampelLabel}</span>
-                <span className="text-sm text-muted-foreground ml-2">
+                <span className="text-sm text-muted-foreground">
                   Belastungsquote: {belastungsquote.toFixed(0)}%
                 </span>
+                <HelpCircle className="h-3.5 w-3.5 text-muted-foreground opacity-0 group-hover:opacity-60 transition-opacity shrink-0" />
               </div>
-            </div>
+            </button>
 
             {/* Budget bar */}
             <div className="space-y-1.5">
@@ -187,6 +193,14 @@ export function LeistbarkeitsCheck({ project, result, onChange }: LeistbarkeitsC
           <Button onClick={handleIncomeSubmit}>Übernehmen</Button>
         </DialogFooter>
       </Dialog>
+      <KpiInfoDialog
+        open={showKpiInfo}
+        onOpenChange={setShowKpiInfo}
+        kpiKey="leistbarkeit"
+        currentValue={`${belastungsquote.toFixed(0)}%`}
+        result={result}
+        project={project}
+      />
     </Card>
   )
 }

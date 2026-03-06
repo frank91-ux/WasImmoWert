@@ -58,7 +58,7 @@ export function NewProjectPage() {
 
   const handleCreate = () => {
     const project = addProject({
-      name: address || `Immobilie ${formatEur(Number(kaufpreis))}`,
+      name: (address ? address.split(',').slice(0, 2).map(s => s.trim()).join(', ') : '') || `Immobilie ${formatEur(Number(kaufpreis))}`,
       address,
       lat,
       lng,

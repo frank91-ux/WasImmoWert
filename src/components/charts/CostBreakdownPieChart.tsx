@@ -2,8 +2,9 @@ import type { CalculationResult } from '@/calc/types'
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts'
 import { ChartCard } from './ChartCard'
 import { formatEur } from '@/lib/format'
+import { TOOLTIP_STYLE, CHART_COLORS } from './chartTheme'
 
-const COLORS = ['var(--color-primary)', '#16a34a', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4']
+const COLORS = [CHART_COLORS.primary, CHART_COLORS.positive, CHART_COLORS.warning, CHART_COLORS.negative, CHART_COLORS.palette[5], CHART_COLORS.palette[7]]
 
 interface CostBreakdownPieChartProps {
   result: CalculationResult
@@ -47,14 +48,7 @@ export function CostBreakdownPieChart({ result }: CostBreakdownPieChartProps) {
             </Pie>
             <Tooltip
               formatter={(value) => formatEur(Number(value))}
-              contentStyle={{
-                backgroundColor: 'var(--color-card)',
-                borderColor: 'var(--color-border)',
-                color: 'var(--color-foreground)',
-                borderRadius: '0.5rem',
-                boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
-                fontSize: '0.8125rem',
-              }}
+              contentStyle={TOOLTIP_STYLE}
             />
             <Legend
               iconType="circle"

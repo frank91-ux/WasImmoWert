@@ -105,3 +105,146 @@ create trigger set_profiles_updated_at
 create trigger set_projects_updated_at
   before update on public.projects
   for each row execute procedure public.update_updated_at();
+
+-- ─── DSGVO Data Management Extensions ───
+
+-- Add new columns to profiles table for subscription and consent tracking
+alter table public.profiles
+  add column if not exists first_name text,
+  add column if not exists subscription_tier text default 'free',
+  add column if not exists subscription_status text default 'active',
+  add column if not exists consent_analytics boolean default false,
+  add column if not exists consent_marketing boolean default false,
+  add column if not exists deleted_at timestamptz;
+
+-- ─── Data Requests Table ───
+-- Tracks user requests for data export and account deletion (DSGVO Articles 15 & 17)
+create table if not exists public.data_requests (
+  id uuid default gen_random_uuid() primary key,
+  user_id uuid references auth.users(id) on delete cascade not null,
+  type text not null check (type in ('export', 'deletion')),
+  status text default 'pending' check (status in ('pending', 'processing', 'completed', 'failed')),
+  request_data jsonb,
+  result_url text,
+  error_message text,
+  created_at timestamptz default now(),
+  completed_at timestamptz,
+  expires_at timestamptz
+);
+
+-- Indexes for data_requests table
+create index if not exists idx_data_requests_user_id on public.data_requests(user_id);
+create index if not exists idx_data_requests_status on public.data_requests(status);
+create index if not exists idx_data_requests_created_at on public.data_requests(created_at desc);
+
+-- ─── Row Level Security for Data Requests ───
+alter table public.data_requests enable row level security;
+
+-- Users can view their own data requests
+create policy "Users can view own data requests"
+  on public.data_requests for select
+  using (auth.uid() = user_id);
+
+-- Users can create data requests for themselves
+create policy "Users can create own data requests"
+  on public.data_requests for insert
+  with check (auth.uid() = user_id);
+
+-- Only system can update data requests (via functions)
+create policy "System only update data requests"
+  on public.data_requests for update
+  using (auth.uid() = user_id and false);
+
+-- ─── Functions for Data Export and Deletion ───
+
+-- Function to request data export (DSGVO Article 15)
+create or replace function public.request_data_export()
+returns uuid as $$
+declare
+  request_id uuid;
+begin
+  insert into public.data_requests (user_id, type, status)
+  values (auth.uid(), 'export', 'pending')
+  returning id into request_id;
+
+  return request_id;
+end;
+$$ language plpgsql security definer;
+
+-- Function to request account deletion (DSGVO Article 17)
+create or replace function public.request_account_deletion()
+returns uuid as $$
+declare
+  request_id uuid;
+begin
+  insert into public.data_requests (user_id, type, status)
+  values (auth.uid(), 'deletion', 'pending')
+  returning id into request_id;
+
+  -- Set deletion timestamp on profile
+  update public.profiles
+  set deleted_at = now()
+  where user_id = auth.uid();
+
+  return request_id;
+end;
+$$ language plpgsql security definer;
+
+-- Function to update user consent preferences
+create or replace function public.update_consent_preferences(
+  p_consent_analytics boolean,
+  p_consent_marketing boolean
+)
+returns void as $$
+begin
+  update public.profiles
+  set
+    consent_analytics = p_consent_analytics,
+    consent_marketing = p_consent_marketing,
+    updated_at = now()
+  where user_id = auth.uid();
+end;
+$$ language plpgsql security definer;
+
+-- Function to get user's consent preferences
+create or replace function public.get_consent_preferences()
+returns table (
+  consent_analytics boolean,
+  consent_marketing boolean,
+  timestamp timestamptz
+) as $$
+begin
+  return query
+  select
+    profiles.consent_analytics,
+    profiles.consent_marketing,
+    profiles.updated_at
+  from public.profiles
+  where user_id = auth.uid();
+end;
+$$ language plpgsql security definer;
+
+-- ─── Cleanup: Mark deleted users' data for retention period ───
+-- Comments: In a real implementation, you would run a background job
+-- to permanently delete marked profiles after the retention period (e.g., 90 days)
+create or replace function public.cleanup_deleted_accounts()
+returns table (
+  deleted_count integer
+) as $$
+declare
+  count_deleted integer;
+begin
+  -- Mark profiles for deletion if requested 90 days ago
+  update public.profiles
+  set deleted_at = now()
+  where user_id in (
+    select user_id from public.data_requests
+    where type = 'deletion'
+    and status = 'completed'
+    and completed_at < now() - interval '90 days'
+  );
+
+  get diagnostics count_deleted = row_count;
+  return query select count_deleted;
+end;
+$$ language plpgsql security definer;

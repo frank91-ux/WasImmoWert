@@ -15,9 +15,16 @@ import {
 type AuthMode = 'authenticated' | 'skipped' | 'none'
 type AuthProvider = 'local' | 'supabase'
 
+interface Subscription {
+  tier: 'free' | 'pro' | 'lifetime'
+  status: string
+}
+
 interface AuthState {
   email: string | null
   displayName: string | null
+  firstName: string | null
+  subscription: Subscription | null
   authMode: AuthMode
   provider: AuthProvider
   loading: boolean
@@ -29,13 +36,20 @@ interface AuthState {
   loginWithOAuth: (provider: 'google' | 'github') => Promise<void>
   skip: () => void
   logout: () => Promise<void>
+  setSubscription: (subscription: Subscription | null) => void
   isAuthenticated: () => boolean
   initAuthListener: () => () => void
 }
 
 const STORAGE_KEY = 'wasimmowert-auth'
 
-function loadAuth(): { email: string | null; authMode: AuthMode; displayName: string | null } {
+function loadAuth(): {
+  email: string | null
+  authMode: AuthMode
+  displayName: string | null
+  firstName: string | null
+  subscription: Subscription | null
+} {
   try {
     const data = localStorage.getItem(STORAGE_KEY)
     if (data) {
@@ -44,15 +58,32 @@ function loadAuth(): { email: string | null; authMode: AuthMode; displayName: st
         email: parsed.email ?? null,
         authMode: parsed.authMode ?? 'none',
         displayName: parsed.displayName ?? null,
+        firstName: parsed.firstName ?? null,
+        subscription: parsed.subscription ?? null,
       }
     }
   } catch { /* ignore */ }
-  return { email: null, authMode: 'none', displayName: null }
+  return {
+    email: null,
+    authMode: 'none',
+    displayName: null,
+    firstName: null,
+    subscription: null,
+  }
 }
 
-function saveAuth(email: string | null, authMode: AuthMode, displayName: string | null = null) {
+function saveAuth(
+  email: string | null,
+  authMode: AuthMode,
+  displayName: string | null = null,
+  firstName: string | null = null,
+  subscription: Subscription | null = null
+) {
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify({ email, authMode, displayName }))
+    localStorage.setItem(
+      STORAGE_KEY,
+      JSON.stringify({ email, authMode, displayName, firstName, subscription })
+    )
   } catch { /* ignore */ }
 }
 
@@ -62,6 +93,8 @@ const useSupabase = isSupabaseConfigured()
 export const useAuthStore = create<AuthState>((set, get) => ({
   email: initial.email,
   displayName: initial.displayName,
+  firstName: initial.firstName,
+  subscription: initial.subscription,
   authMode: initial.authMode,
   provider: useSupabase ? 'supabase' : 'local',
   loading: false,
@@ -83,8 +116,15 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         const data = await signInWithEmail(cleanEmail, password)
         const userEmail = data.user?.email ?? cleanEmail
         const name = data.user?.user_metadata?.full_name ?? userEmail.split('@')[0]
-        saveAuth(userEmail, 'authenticated', name)
-        set({ email: userEmail, displayName: name, authMode: 'authenticated', loading: false })
+        const firstName = data.user?.user_metadata?.first_name ?? null
+        saveAuth(userEmail, 'authenticated', name, firstName)
+        set({
+          email: userEmail,
+          displayName: name,
+          firstName,
+          authMode: 'authenticated',
+          loading: false,
+        })
         toast.success('Erfolgreich angemeldet')
       } catch (err: unknown) {
         set({ loading: false })
@@ -93,8 +133,14 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       }
     } else {
       // Local fallback
-      saveAuth(cleanEmail, 'authenticated', cleanEmail.split('@')[0])
-      set({ email: cleanEmail, displayName: cleanEmail.split('@')[0], authMode: 'authenticated' })
+      const firstName = cleanEmail.split('@')[0]
+      saveAuth(cleanEmail, 'authenticated', firstName, firstName)
+      set({
+        email: cleanEmail,
+        displayName: firstName,
+        firstName,
+        authMode: 'authenticated',
+      })
       toast.success('Angemeldet (lokal)')
     }
   },
@@ -150,7 +196,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
   skip: () => {
     saveAuth(null, 'skipped')
-    set({ email: null, displayName: null, authMode: 'skipped' })
+    set({ email: null, displayName: null, firstName: null, subscription: null, authMode: 'skipped' })
   },
 
   logout: async () => {
@@ -160,8 +206,20 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       } catch { /* ignore */ }
     }
     saveAuth(null, 'none')
-    set({ email: null, displayName: null, authMode: 'none' })
+    set({
+      email: null,
+      displayName: null,
+      firstName: null,
+      subscription: null,
+      authMode: 'none',
+    })
     toast.success('Abgemeldet')
+  },
+
+  setSubscription: (subscription: Subscription | null) => {
+    const state = get()
+    saveAuth(state.email, state.authMode, state.displayName, state.firstName, subscription)
+    set({ subscription })
   },
 
   isAuthenticated: () => get().authMode !== 'none',
@@ -178,11 +236,18 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         if (event === 'SIGNED_IN' && session?.user) {
           const email = session.user.email ?? ''
           const name = session.user.user_metadata?.full_name ?? email.split('@')[0]
-          saveAuth(email, 'authenticated', name)
-          set({ email, displayName: name, authMode: 'authenticated' })
+          const firstName = session.user.user_metadata?.first_name ?? null
+          saveAuth(email, 'authenticated', name, firstName)
+          set({ email, displayName: name, firstName, authMode: 'authenticated' })
         } else if (event === 'SIGNED_OUT') {
           saveAuth(null, 'none')
-          set({ email: null, displayName: null, authMode: 'none' })
+          set({
+            email: null,
+            displayName: null,
+            firstName: null,
+            subscription: null,
+            authMode: 'none',
+          })
         }
       }
     )

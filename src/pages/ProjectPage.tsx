@@ -2,7 +2,6 @@ import { useEffect, useMemo, useState } from 'react'
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom'
 import { useProjectStore } from '@/store/useProjectStore'
 import { useCalculation } from '@/hooks/useCalculation'
-import { useScrollSync } from '@/hooks/useScrollSync'
 import { EigennutzungSetupDialog } from '@/components/inputs/EigennutzungSetupDialog'
 import { ParameterSlider } from '@/components/simulation/ParameterSlider'
 import { KpiOverview } from '@/components/results/KpiOverview'
@@ -13,9 +12,10 @@ import { WeitereSimulationenTab } from '@/components/tabs/WeitereSimulationenTab
 import { EmpfehlungTab } from '@/components/tabs/EmpfehlungTab'
 import { MarktvergleichTab } from '@/components/tabs/MarktvergleichTab'
 import { KiBeraterTab } from '@/components/tabs/KiBeraterTab'
-import { VerticalTabNav, type SectionDef } from '@/components/layout/VerticalTabNav'
-import { SectionDivider } from '@/components/shared/SectionDivider'
+import { EtvProtokolleTab } from '@/components/tabs/EtvProtokolleTab'
+import { HorizontalTabBar, type SectionDef } from '@/components/layout/HorizontalTabBar'
 import { DashboardSection } from '@/components/dashboard/DashboardSection'
+import { WidgetDrawer } from '@/components/dashboard/WidgetDrawer'
 import { BUNDESLAND_LABELS } from '@/calc/grunderwerbsteuer'
 import { RentabilitaetBadge } from '@/components/results/RentabilitaetBadge'
 import { RentabilitaetDialog } from '@/components/results/RentabilitaetDialog'
@@ -45,10 +45,12 @@ import {
   Star,
   Bot,
   Briefcase,
+  ClipboardList,
 } from 'lucide-react'
+import { toast } from 'sonner'
 import type { Project } from '@/calc/types'
 
-const SECTION_IDS = [
+const TAB_IDS = [
   'uebersicht',
   'cashflow',
   'steuer',
@@ -56,7 +58,10 @@ const SECTION_IDS = [
   'marktvergleich',
   'empfehlung',
   'ki-berater',
+  'etv-protokolle',
 ] as const
+
+type TabId = (typeof TAB_IDS)[number]
 
 const SECTIONS: SectionDef[] = [
   { id: 'uebersicht', label: 'Übersicht', icon: <LayoutDashboard /> },
@@ -66,6 +71,7 @@ const SECTIONS: SectionDef[] = [
   { id: 'marktvergleich', label: 'Marktvergleich', icon: <MapPin /> },
   { id: 'empfehlung', label: 'Empfehlung', icon: <Star /> },
   { id: 'ki-berater', label: 'KI-Berater', icon: <Bot /> },
+  { id: 'etv-protokolle', label: 'ETV-Protokolle', icon: <ClipboardList /> },
 ]
 
 export function ProjectPage() {
@@ -74,26 +80,20 @@ export function ProjectPage() {
   const [searchParams, setSearchParams] = useSearchParams()
   const { projects, loaded, loadProjects, updateProject, setActiveProject, togglePortfolio } = useProjectStore()
 
-  // Scroll-sync: vertical tab highlights follow scroll position
-  const { activeSection, scrollToSection } = useScrollSync([...SECTION_IDS])
-
-  // Deep-link: scroll to section from URL on mount
+  // Tab state — read initial tab from URL
   const initialTab = searchParams.get('tab')
-  useEffect(() => {
-    if (initialTab && SECTION_IDS.includes(initialTab as (typeof SECTION_IDS)[number])) {
-      const timer = setTimeout(() => scrollToSection(initialTab), 150)
-      return () => clearTimeout(timer)
-    }
-  }, []) // eslint-disable-line react-hooks/exhaustive-deps
+  const [activeTab, setActiveTab] = useState<TabId>(
+    initialTab && TAB_IDS.includes(initialTab as TabId) ? (initialTab as TabId) : 'uebersicht',
+  )
 
-  // Update URL when active section changes
+  // Sync tab to URL
   useEffect(() => {
-    if (activeSection && activeSection !== 'uebersicht') {
-      setSearchParams({ tab: activeSection }, { replace: true })
-    } else if (activeSection === 'uebersicht') {
+    if (activeTab !== 'uebersicht') {
+      setSearchParams({ tab: activeTab }, { replace: true })
+    } else {
       setSearchParams({}, { replace: true })
     }
-  }, [activeSection, setSearchParams])
+  }, [activeTab, setSearchParams])
 
   // Dialogs
   const [showEigennutzungSetup, setShowEigennutzungSetup] = useState(false)
@@ -349,6 +349,13 @@ export function ProjectPage() {
     }
   }
 
+  const handleTabClick = (tabId: string) => {
+    setActiveTab(tabId as TabId)
+    // Scroll to top of content area when switching tabs
+    const main = document.querySelector('main')
+    if (main) main.scrollTo({ top: 0, behavior: 'instant' })
+  }
+
   return (
     <div className="space-y-4">
       {/* Header */}
@@ -365,7 +372,7 @@ export function ProjectPage() {
             </button>
           </div>
           <RentabilitaetBadge score={rentabilitaet} onClick={() => setShowRentabilitaet(true)} />
-          <ProjectHeaderKpis kpis={result.kpis} nutzungsart={project.nutzungsart} />
+          <ProjectHeaderKpis kpis={result.kpis} nutzungsart={project.nutzungsart} result={result} project={project} />
           <div className="flex rounded-md overflow-hidden border">
             <button
               className={`px-3 py-1.5 text-sm font-medium transition-colors ${
@@ -391,7 +398,10 @@ export function ProjectPage() {
           <Button
             size="sm"
             variant={project.isInPortfolio ? 'default' : 'outline'}
-            onClick={() => togglePortfolio(project.id)}
+            onClick={() => {
+              togglePortfolio(project.id)
+              toast.success(project.isInPortfolio ? 'Zurück zu Projekte verschoben' : 'Zum Portfolio hinzugefügt')
+            }}
             className="gap-1.5"
           >
             <Briefcase className="h-3.5 w-3.5" />
@@ -400,76 +410,58 @@ export function ProjectPage() {
         </div>
       </div>
 
-      {/* Main layout: Vertical Tabs + Content */}
-      <div className="flex gap-6">
-        {/* Vertical tab nav (hidden on mobile) */}
-        <VerticalTabNav
-          sections={SECTIONS}
-          activeSection={activeSection}
-          onSectionClick={scrollToSection}
-        />
+      {/* Horizontal Tab Navigation */}
+      <HorizontalTabBar
+        sections={SECTIONS}
+        activeSection={activeTab}
+        onSectionClick={handleTabClick}
+      />
 
-        {/* Scrollable content sections */}
-        <div className="flex-1 min-w-0 space-y-10">
-          {/* SECTION: Übersicht (Dashboard Builder) */}
-          <section id="uebersicht" className="scroll-mt-4 space-y-6">
-            <DashboardSection renderWidget={renderWidget} />
-          </section>
+      {/* Active Tab Content — only the active tab is rendered */}
+      <div className="pt-2">
+        {activeTab === 'uebersicht' && (
+          <DashboardSection renderWidget={renderWidget} />
+        )}
 
-          <SectionDivider />
+        {activeTab === 'cashflow' && (
+          <CashflowTab project={project} result={result} onChange={handleChange} />
+        )}
 
-          {/* SECTION: Cashflow */}
-          <section id="cashflow" className="scroll-mt-4">
-            <CashflowTab project={project} result={result} onChange={handleChange} />
-          </section>
+        {activeTab === 'steuer' && (
+          project.nutzungsart === 'eigennutzung' ? (
+            <Card>
+              <CardContent className="py-8 text-center text-muted-foreground text-sm">
+                Steuer-Simulation ist nur für Vermietungsobjekte verfügbar.
+              </CardContent>
+            </Card>
+          ) : (
+            <SteuerSimulationTab project={project} result={result} onChange={handleChange} />
+          )
+        )}
 
-          <SectionDivider />
+        {activeTab === 'simulationen' && (
+          <WeitereSimulationenTab project={project} result={result} onChange={handleChange} />
+        )}
 
-          {/* SECTION: Steuer-Simulation */}
-          <section id="steuer" className="scroll-mt-4">
-            {project.nutzungsart === 'eigennutzung' ? (
-              <Card>
-                <CardContent className="py-8 text-center text-muted-foreground text-sm">
-                  Steuer-Simulation ist nur für Vermietungsobjekte verfügbar.
-                </CardContent>
-              </Card>
-            ) : (
-              <SteuerSimulationTab project={project} result={result} onChange={handleChange} />
-            )}
-          </section>
+        {activeTab === 'marktvergleich' && (
+          <MarktvergleichTab project={project} result={result} />
+        )}
 
-          <SectionDivider />
+        {activeTab === 'empfehlung' && (
+          <EmpfehlungTab project={project} result={result} />
+        )}
 
-          {/* SECTION: Weitere Simulationen */}
-          <section id="simulationen" className="scroll-mt-4">
-            <WeitereSimulationenTab project={project} result={result} onChange={handleChange} />
-          </section>
+        {activeTab === 'ki-berater' && (
+          <KiBeraterTab project={project} result={result} onChange={handleChange} />
+        )}
 
-          <SectionDivider />
-
-          {/* SECTION: Marktvergleich */}
-          <section id="marktvergleich" className="scroll-mt-4">
-            <MarktvergleichTab project={project} result={result} />
-          </section>
-
-          <SectionDivider />
-
-          {/* SECTION: Empfehlung */}
-          <section id="empfehlung" className="scroll-mt-4">
-            <EmpfehlungTab project={project} result={result} />
-          </section>
-
-          <SectionDivider />
-
-          {/* SECTION: KI-Berater */}
-          <section id="ki-berater" className="scroll-mt-4">
-            <KiBeraterTab project={project} result={result} onChange={handleChange} />
-          </section>
-
-          {/* Bottom spacer so last section can scroll to top */}
-          <div className="h-[50vh]" />
-        </div>
+        {activeTab === 'etv-protokolle' && (
+          <EtvProtokolleTab project={project} />
+        )}
       </div>
+
+      {/* Widget Panel (Slide-Over) */}
+      <WidgetDrawer activeSection={activeTab} />
 
       {/* Dialogs */}
       <EigennutzungSetupDialog

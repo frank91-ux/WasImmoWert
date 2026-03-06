@@ -28,11 +28,21 @@ const PARAMS: ParamDef[] = [
   { key: 'mietausfallwagnis', label: 'Leerstand', invert: true },
 ]
 
+/** Keys irrelevant for Eigennutzung (no rental income, no vacancy) */
+const EIGENNUTZUNG_EXCLUDED: Set<string> = new Set([
+  'monatsmieteKalt',
+  'mietausfallwagnis',
+])
+
 export function calculateSensitivitaet(project: Project): SensitivitaetResult[] {
   const baseResult = calculateAll(project)
   const baseCashflow = baseResult.kpis.jaehrlichCashflowNachSteuer
 
-  return PARAMS
+  const params = project.nutzungsart === 'eigennutzung'
+    ? PARAMS.filter((p) => !EIGENNUTZUNG_EXCLUDED.has(p.key))
+    : PARAMS
+
+  return params
     .map((param) => {
       const baseValue = project[param.key] as number
       if (typeof baseValue !== 'number') return null
@@ -131,28 +141,30 @@ export function generateTipps(project: Project): SensitivitaetTipp[] {
     )
   }
 
-  // --- MIETE-TIPPS ---
+  // --- MIETE-TIPPS (nur bei Vermietung) ---
 
-  // 4. Kaltmiete erhöhen +10%
-  const neueMiete = project.monatsmieteKalt * 1.1
-  tryTipp(
-    { monatsmieteKalt: neueMiete },
-    'Kaltmiete um 10% erhöhen',
-    (impact) => `Kaltmiete von ${formatEur(project.monatsmieteKalt)} auf ${formatEur(neueMiete)}: +${formatEur(impact)}/Jahr`,
-    'Mögliche Hebel: möblierte Vermietung, Indexmietvertrag, Modernisierungsumlage (§559 BGB).',
-    'miete',
-  )
-
-  // 5. Mietausfallwagnis senken (-1 Prozentpunkt)
-  if (project.mietausfallwagnis > 1) {
-    const neuerMietausfall = project.mietausfallwagnis - 1
+  if (project.nutzungsart === 'vermietung') {
+    // 4. Kaltmiete erhöhen +10%
+    const neueMiete = project.monatsmieteKalt * 1.1
     tryTipp(
-      { mietausfallwagnis: neuerMietausfall },
-      'Mietausfallwagnis senken',
-      (impact) => `Mietausfallwagnis von ${project.mietausfallwagnis.toFixed(1)}% auf ${neuerMietausfall.toFixed(1)}%: +${formatEur(impact)}/Jahr`,
-      'Realistisch bei guter Lage, hoher Nachfrage und solventen Mietern.',
+      { monatsmieteKalt: neueMiete },
+      'Kaltmiete um 10% erhöhen',
+      (impact) => `Kaltmiete von ${formatEur(project.monatsmieteKalt)} auf ${formatEur(neueMiete)}: +${formatEur(impact)}/Jahr`,
+      'Mögliche Hebel: möblierte Vermietung, Indexmietvertrag, Modernisierungsumlage (§559 BGB).',
       'miete',
     )
+
+    // 5. Mietausfallwagnis senken (-1 Prozentpunkt)
+    if (project.mietausfallwagnis > 1) {
+      const neuerMietausfall = project.mietausfallwagnis - 1
+      tryTipp(
+        { mietausfallwagnis: neuerMietausfall },
+        'Mietausfallwagnis senken',
+        (impact) => `Mietausfallwagnis von ${project.mietausfallwagnis.toFixed(1)}% auf ${neuerMietausfall.toFixed(1)}%: +${formatEur(impact)}/Jahr`,
+        'Realistisch bei guter Lage, hoher Nachfrage und solventen Mietern.',
+        'miete',
+      )
+    }
   }
 
   // --- KAUFPREIS-TIPP ---
@@ -191,5 +203,5 @@ export function generateTipps(project: Project): SensitivitaetTipp[] {
     )
   }
 
-  return tipps.sort((a, b) => b.impactJahr - a.impactJahr).slice(0, 8)
+  return tipps.sort((a, b) => b.impactJahr - a.impactJahr).slice(0, 3)
 }

@@ -19,6 +19,26 @@ export interface NebenkostenPosten {
   umlagefaehig: boolean     // passable to tenant?
 }
 
+export interface Wohnung {
+  id: string
+  qm: number          // m²
+  mietpreis: number    // EUR/month
+  nebenkosten: number  // EUR/month (Hausgeld or Nebenkosten per unit)
+}
+
+/** Scenario adjustment for AI-driven multi-year simulations */
+export interface ScenarioAdjustment {
+  id: string
+  label: string                    // e.g. "Nebenkosten-Erhöhung ab Jahr 3"
+  type: 'expense' | 'income' | 'kredit'
+  fromYear: number                 // start year (inclusive)
+  toYear: number                   // end year (inclusive), default 30
+  annualAmount?: number            // EUR/year (for expense/income)
+  kreditSumme?: number             // EUR (for kredit type)
+  kreditZins?: number              // % p.a. (for kredit type)
+  kreditTilgung?: number           // % p.a. (for kredit type)
+}
+
 export type PropertyType = 'wohnung' | 'haus'
 
 export type Bundesland =
@@ -61,6 +81,10 @@ export interface Project {
   // Usage mode
   nutzungsart: 'vermietung' | 'eigennutzung'
   ersparteMiete: number        // EUR/month (imputed rent savings for self-use)
+
+  // Mehrfamilienhaus
+  isMehrfamilienhaus: boolean
+  wohnungen: Wohnung[]
 
   // Rental income
   monatsmieteKalt: number      // EUR

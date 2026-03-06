@@ -75,16 +75,16 @@ export function TaxExampleCalculation({ tax, rental, operatingCosts }: TaxExampl
                   key={line.label}
                   className={[
                     line.bold ? 'border-t font-semibold' : '',
-                    line.highlight ? 'bg-primary/5' : '',
+                    line.highlight ? 'bg-teal-50/50 dark:bg-teal-950/20' : '',
                   ].join(' ')}
                 >
-                  <td className={`py-1.5 ${line.indent ? 'pl-4 text-xs text-muted-foreground' : ''}`}>
+                  <td className={`py-2 ${line.indent ? 'pl-4 text-xs text-muted-foreground' : ''}`}>
                     {line.label}
                   </td>
-                  <td className={`py-1.5 text-right tabular-nums ${line.value < 0 ? 'text-destructive' : ''} ${line.highlight ? 'text-primary font-bold' : ''}`}>
+                  <td className={`py-2 text-right tabular-nums ${line.value < 0 ? 'text-destructive' : ''} ${line.highlight ? 'text-teal-700 dark:text-teal-400 font-bold' : ''}`}>
                     {formatEur(line.value)}
                   </td>
-                  <td className={`py-1.5 text-right tabular-nums text-muted-foreground ${line.indent ? 'text-xs' : ''}`}>
+                  <td className={`py-2 text-right tabular-nums text-muted-foreground ${line.indent ? 'text-xs' : ''} ${line.highlight ? 'text-teal-600 dark:text-teal-400 font-medium' : ''}`}>
                     {formatEur(line.value / 12)}
                   </td>
                 </tr>
@@ -100,10 +100,15 @@ export function TaxExampleCalculation({ tax, rental, operatingCosts }: TaxExampl
               {' '}Es entsteht eine <span className="text-success font-medium">Steuerersparnis von {formatEur(Math.abs(steuerEffekt))}/Jahr ({formatEur(Math.abs(monatlich))}/Mon)</span>.
             </p>
           ) : (
-            <p>
-              Die Mieteinnahmen übersteigen die absetzbaren Kosten.
-              {' '}Es entsteht eine <span className="text-destructive font-medium">zusätzliche Steuerlast von {formatEur(steuerEffekt)}/Jahr ({formatEur(monatlich)}/Mon)</span>.
-            </p>
+            <div className="space-y-1.5">
+              <p>
+                Die Mieteinnahmen übersteigen die absetzbaren Kosten.
+                {' '}Es entsteht eine <span className="font-medium">Steuerlast von {formatEur(steuerEffekt)}/Jahr ({formatEur(monatlich)}/Mon)</span>.
+              </p>
+              <p className="text-xs">
+                💡 <span className="font-medium">Trotzdem lohnenswert:</span> Die Steuerlast ist nur ein Faktor – dein Cashflow nach Steuer kann weiterhin positiv sein. Zusätzlich profitierst du von der Wertsteigerung der Immobilie und dem laufenden Vermögensaufbau durch Tilgung.
+              </p>
+            </div>
           )}
         </div>
       </CardContent>

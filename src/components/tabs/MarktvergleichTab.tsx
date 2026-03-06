@@ -5,11 +5,21 @@ import { MARKTDATEN, getPreisfarbe, LEGENDE_KAUF, LEGENDE_MIETE } from '@/data/m
 import type { StadtteilDaten } from '@/data/marktdaten'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { formatEur } from '@/lib/format'
-import { MapPin, Home, TrendingUp, TrendingDown, Minus } from 'lucide-react'
+import { MapPin, Home, TrendingUp, TrendingDown, Minus, ChevronDown, DollarSign, Building2, HelpCircle } from 'lucide-react'
+import { KpiInfoDialog } from '@/components/results/KpiInfoDialog'
 
 interface MarktvergleichTabProps {
   project: Project
   result: CalculationResult
+}
+
+// Haversine distance in km
+function haversineDistance(lat1: number, lng1: number, lat2: number, lng2: number): number {
+  const R = 6371
+  const dLat = (lat2 - lat1) * Math.PI / 180
+  const dLng = (lng2 - lng1) * Math.PI / 180
+  const a = Math.sin(dLat / 2) ** 2 + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLng / 2) ** 2
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
 }
 
 // SVG circle marker as data URL
@@ -34,6 +44,8 @@ function formatPreisKurz(preis: number): string {
   return preis.toFixed(0)
 }
 
+const NEARBY_RADIUS_KM = 8
+
 export function MarktvergleichTab({ project, result }: MarktvergleichTabProps) {
   const mapRef = useRef<HTMLDivElement>(null)
   const mapInstanceRef = useRef<google.maps.Map | null>(null)
@@ -42,26 +54,45 @@ export function MarktvergleichTab({ project, result }: MarktvergleichTabProps) {
   const { isLoaded } = useGoogleMaps()
 
   const [modus, setModus] = useState<'kauf' | 'miete'>('kauf')
+  const [showAllStadtteile, setShowAllStadtteile] = useState(false)
+  const [listExpanded, setListExpanded] = useState(false)
+  const [marktKpiInfo, setMarktKpiInfo] = useState<string | null>(null)
 
   const eigenPreisProQm = project.wohnflaeche > 0 ? project.kaufpreis / project.wohnflaeche : 0
   const eigenMieteProQm = project.wohnflaeche > 0 ? project.monatsmieteKalt / project.wohnflaeche : 0
 
   const legende = modus === 'kauf' ? LEGENDE_KAUF : LEGENDE_MIETE
 
-  // Sort districts by price (descending)
-  const sortierteStadtteile = useMemo(() => {
-    return [...MARKTDATEN].sort((a, b) => {
+  // Nearby + sorted districts (compute first, then use for averages)
+  const { nearbyStadtteile, allSorted } = useMemo(() => {
+    const sorted = [...MARKTDATEN].sort((a, b) => {
       const av = modus === 'kauf' ? a.kaufpreisProQm : a.mietpreisProQm
       const bv = modus === 'kauf' ? b.kaufpreisProQm : b.mietpreisProQm
       return bv - av
     })
-  }, [modus])
 
-  // Average for comparison
-  const durchschnitt = useMemo(() => {
-    const sum = MARKTDATEN.reduce((s, d) => s + (modus === 'kauf' ? d.kaufpreisProQm : d.mietpreisProQm), 0)
-    return sum / MARKTDATEN.length
-  }, [modus])
+    if (project.lat != null && project.lng != null) {
+      const nearby = sorted.filter((s) =>
+        haversineDistance(project.lat!, project.lng!, s.lat, s.lng) <= NEARBY_RADIUS_KM
+      )
+      return { nearbyStadtteile: nearby, allSorted: sorted }
+    }
+    return { nearbyStadtteile: sorted, allSorted: sorted }
+  }, [modus, project.lat, project.lng])
+
+  const displayStadtteile = showAllStadtteile ? allSorted : nearbyStadtteile
+
+  // Average from nearby Stadtteile only (fallback to all if none nearby)
+  const kaufDurchschnitt = useMemo(() => {
+    const data = nearbyStadtteile.length > 0 ? nearbyStadtteile : MARKTDATEN
+    return data.reduce((s, d) => s + d.kaufpreisProQm, 0) / data.length
+  }, [nearbyStadtteile])
+  const mietDurchschnitt = useMemo(() => {
+    const data = nearbyStadtteile.length > 0 ? nearbyStadtteile : MARKTDATEN
+    return data.reduce((s, d) => s + d.mietpreisProQm, 0) / data.length
+  }, [nearbyStadtteile])
+  const kaufDiff = eigenPreisProQm > 0 ? ((eigenPreisProQm / kaufDurchschnitt) - 1) * 100 : 0
+  const mietDiff = eigenMieteProQm > 0 ? ((eigenMieteProQm / mietDurchschnitt) - 1) * 100 : 0
 
   // Clear all markers
   function clearMarkers() {
@@ -135,7 +166,7 @@ export function MarktvergleichTab({ project, result }: MarktvergleichTabProps) {
       })
 
       projectMarker.addListener('click', () => {
-        const diff = eigenPreisProQm - durchschnitt
+        const diff = eigenPreisProQm - kaufDurchschnitt
         const diffStr = diff > 0 ? `+${formatEur(diff)}` : formatEur(diff)
 
         infoWindowRef.current!.setContent(`
@@ -191,7 +222,7 @@ export function MarktvergleichTab({ project, result }: MarktvergleichTabProps) {
           <div className="flex items-center justify-between">
             <CardTitle className="text-base flex items-center gap-2">
               <MapPin className="h-4 w-4 text-muted-foreground" />
-              Marktvergleich – Herzogenaurach & Erlangen
+              Marktvergleich
             </CardTitle>
             <div className="flex rounded-lg border overflow-hidden text-sm">
               <button
@@ -210,11 +241,79 @@ export function MarktvergleichTab({ project, result }: MarktvergleichTabProps) {
           </div>
         </CardHeader>
         <CardContent className="space-y-4">
-          {/* Map */}
-          <div
-            ref={mapRef}
-            className="w-full h-[500px] rounded-lg overflow-hidden bg-muted"
-          />
+          {/* KPIs + Map in grid */}
+          <div className="grid grid-cols-12 gap-4">
+            {/* KPIs left */}
+            <div className="col-span-12 lg:col-span-3 space-y-3">
+              {/* Kaufpreis KPI */}
+              <Card className="shadow-sm cursor-pointer hover:shadow-md transition-shadow group" onClick={() => setMarktKpiInfo('marktvergleich')}>
+                <CardContent className="p-4 space-y-3">
+                  <div className="flex items-center gap-2 text-muted-foreground text-xs font-medium">
+                    <DollarSign className="h-3.5 w-3.5" />
+                    Kaufpreis/m²
+                    <HelpCircle className="h-3 w-3 ml-auto opacity-0 group-hover:opacity-60 transition-opacity" />
+                  </div>
+                  <div className="space-y-1.5">
+                    <div className="flex items-baseline justify-between">
+                      <span className="text-xs text-muted-foreground">Dein Preis</span>
+                      <span className="text-lg font-bold tabular-nums">
+                        {eigenPreisProQm > 0 ? `${eigenPreisProQm.toLocaleString('de-DE', { maximumFractionDigits: 0 })} €` : '—'}
+                      </span>
+                    </div>
+                    <div className="flex items-baseline justify-between">
+                      <span className="text-xs text-muted-foreground">Ø Markt</span>
+                      <span className="text-lg font-semibold tabular-nums text-muted-foreground">
+                        {kaufDurchschnitt.toLocaleString('de-DE', { maximumFractionDigits: 0 })} €
+                      </span>
+                    </div>
+                  </div>
+                  {eigenPreisProQm > 0 && (
+                    <div className={`text-center text-sm font-semibold rounded-md py-1 ${kaufDiff <= 0 ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/30 dark:text-emerald-400' : 'bg-red-50 text-red-600 dark:bg-red-950/30 dark:text-red-400'}`}>
+                      {kaufDiff > 0 ? '+' : ''}{kaufDiff.toFixed(1)}% {kaufDiff <= 0 ? 'günstiger' : 'teurer'} als Markt
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+
+              {/* Mietpreis KPI */}
+              <Card className="shadow-sm cursor-pointer hover:shadow-md transition-shadow group" onClick={() => setMarktKpiInfo('marktvergleich')}>
+                <CardContent className="p-4 space-y-3">
+                  <div className="flex items-center gap-2 text-muted-foreground text-xs font-medium">
+                    <Building2 className="h-3.5 w-3.5" />
+                    Mietpreis/m²
+                    <HelpCircle className="h-3 w-3 ml-auto opacity-0 group-hover:opacity-60 transition-opacity" />
+                  </div>
+                  <div className="space-y-1.5">
+                    <div className="flex items-baseline justify-between">
+                      <span className="text-xs text-muted-foreground">Deine Miete</span>
+                      <span className="text-lg font-bold tabular-nums">
+                        {eigenMieteProQm > 0 ? `${eigenMieteProQm.toFixed(2)} €` : '—'}
+                      </span>
+                    </div>
+                    <div className="flex items-baseline justify-between">
+                      <span className="text-xs text-muted-foreground">Ø Markt</span>
+                      <span className="text-lg font-semibold tabular-nums text-muted-foreground">
+                        {mietDurchschnitt.toFixed(2)} €
+                      </span>
+                    </div>
+                  </div>
+                  {eigenMieteProQm > 0 && (
+                    <div className={`text-center text-sm font-semibold rounded-md py-1 ${mietDiff >= 0 ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/30 dark:text-emerald-400' : 'bg-red-50 text-red-600 dark:bg-red-950/30 dark:text-red-400'}`}>
+                      {mietDiff > 0 ? '+' : ''}{mietDiff.toFixed(1)}% {mietDiff >= 0 ? 'über' : 'unter'} Markt
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Map right */}
+            <div className="col-span-12 lg:col-span-9">
+              <div
+                ref={mapRef}
+                className="w-full h-[450px] rounded-lg overflow-hidden bg-muted"
+              />
+            </div>
+          </div>
 
           {/* Legende */}
           <div className="flex items-center justify-center gap-4 text-xs text-muted-foreground">
@@ -232,96 +331,107 @@ export function MarktvergleichTab({ project, result }: MarktvergleichTabProps) {
         </CardContent>
       </Card>
 
-      {/* Stadtteil-Tabelle */}
+      {/* Collapsible Stadtteil-Tabelle */}
       <Card>
-        <CardHeader className="pb-3">
-          <CardTitle className="text-base">
-            Stadtteile im Vergleich
-          </CardTitle>
+        <CardHeader className="pb-0">
+          <button
+            className="flex items-center justify-between w-full text-left"
+            onClick={() => setListExpanded(!listExpanded)}
+          >
+            <CardTitle className="text-base">
+              Stadtteile im Vergleich
+              <span className="text-xs font-normal text-muted-foreground ml-2">
+                ({displayStadtteile.length} {showAllStadtteile ? 'alle' : 'in der Nähe'})
+              </span>
+            </CardTitle>
+            <ChevronDown className={`h-4 w-4 text-muted-foreground transition-transform ${listExpanded ? '' : '-rotate-90'}`} />
+          </button>
         </CardHeader>
-        <CardContent>
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b text-muted-foreground">
-                  <th className="text-left py-2 font-medium">Stadtteil</th>
-                  <th className="text-left py-2 font-medium pl-2">Stadt</th>
-                  <th className={`text-right py-2 font-medium ${modus === 'kauf' ? 'text-foreground' : ''}`}>Kauf/m²</th>
-                  <th className={`text-right py-2 font-medium ${modus === 'miete' ? 'text-foreground' : ''}`}>Miete/m²</th>
-                  <th className="text-right py-2 font-medium">Trend</th>
-                </tr>
-              </thead>
-              <tbody>
-                {sortierteStadtteile.map((s) => {
-                  const trend = modus === 'kauf' ? s.trendKauf : s.trendMiete
-                  const farbe = getPreisfarbe(modus === 'kauf' ? s.kaufpreisProQm : s.mietpreisProQm, modus)
-                  return (
-                    <tr key={`${s.stadt}-${s.name}`} className="border-b last:border-0 hover:bg-muted/50">
-                      <td className="py-2 flex items-center gap-2">
-                        <span className="inline-block w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: farbe }} />
-                        {s.name}
-                      </td>
-                      <td className="py-2 pl-2 text-muted-foreground">{s.stadt}</td>
-                      <td className={`py-2 text-right tabular-nums ${modus === 'kauf' ? 'font-semibold' : 'text-muted-foreground'}`}>
-                        {s.kaufpreisProQm.toLocaleString('de-DE')} €
-                      </td>
-                      <td className={`py-2 text-right tabular-nums ${modus === 'miete' ? 'font-semibold' : 'text-muted-foreground'}`}>
-                        {s.mietpreisProQm.toFixed(2)} €
-                      </td>
-                      <td className="py-2 text-right tabular-nums">
-                        {trend != null ? (
-                          <span className={`inline-flex items-center gap-0.5 ${trend > 0 ? 'text-success' : trend < 0 ? 'text-destructive' : 'text-muted-foreground'}`}>
-                            {trend > 0 ? <TrendingUp className="h-3 w-3" /> : trend < 0 ? <TrendingDown className="h-3 w-3" /> : <Minus className="h-3 w-3" />}
-                            {trend > 0 ? '+' : ''}{trend.toFixed(1)}%
-                          </span>
-                        ) : '—'}
-                      </td>
-                    </tr>
-                  )
-                })}
-                {/* Eigenes Objekt */}
-                {project.wohnflaeche > 0 && (
-                  <tr className="border-t-2 border-primary/20 bg-primary/5 font-medium">
-                    <td className="py-2 flex items-center gap-2">
-                      <Home className="h-3.5 w-3.5 text-primary shrink-0" />
-                      {project.name || 'Mein Objekt'}
-                    </td>
-                    <td className="py-2 pl-2 text-muted-foreground">{project.address ? project.address.split(',')[0] : '—'}</td>
-                    <td className={`py-2 text-right tabular-nums ${modus === 'kauf' ? 'font-bold text-primary' : 'text-muted-foreground'}`}>
-                      {eigenPreisProQm.toLocaleString('de-DE', { maximumFractionDigits: 0 })} €
-                    </td>
-                    <td className={`py-2 text-right tabular-nums ${modus === 'miete' ? 'font-bold text-primary' : 'text-muted-foreground'}`}>
-                      {eigenMieteProQm.toFixed(2)} €
-                    </td>
-                    <td className="py-2 text-right text-muted-foreground">—</td>
+        {listExpanded && (
+          <CardContent className="pt-3">
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b text-muted-foreground">
+                    <th className="text-left py-2 font-medium">Stadtteil</th>
+                    <th className="text-left py-2 font-medium pl-2">Stadt</th>
+                    <th className={`text-right py-2 font-medium ${modus === 'kauf' ? 'text-foreground' : ''}`}>Kauf/m²</th>
+                    <th className={`text-right py-2 font-medium ${modus === 'miete' ? 'text-foreground' : ''}`}>Miete/m²</th>
+                    <th className="text-right py-2 font-medium">Trend</th>
                   </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
-
-          {/* Durchschnittsvergleich */}
-          {project.wohnflaeche > 0 && (
-            <div className="mt-4 pt-3 border-t text-sm text-muted-foreground">
-              {modus === 'kauf' ? (
-                <p>
-                  Ø Kaufpreis Region: <span className="font-semibold text-foreground">{durchschnitt.toLocaleString('de-DE', { maximumFractionDigits: 0 })} €/m²</span>
-                  {' · '}Ihr Objekt: <span className={`font-semibold ${eigenPreisProQm <= durchschnitt ? 'text-success' : 'text-destructive'}`}>
-                    {eigenPreisProQm <= durchschnitt ? '' : '+'}{(eigenPreisProQm - durchschnitt).toLocaleString('de-DE', { maximumFractionDigits: 0 })} €/m² {eigenPreisProQm <= durchschnitt ? 'unter' : 'über'} Durchschnitt
-                  </span>
-                </p>
-              ) : (
-                <p>
-                  Ø Mietpreis Region: <span className="font-semibold text-foreground">{durchschnitt.toFixed(2)} €/m²</span>
-                  {' · '}Ihre Miete: <span className={`font-semibold ${eigenMieteProQm >= durchschnitt ? 'text-success' : 'text-destructive'}`}>
-                    {eigenMieteProQm >= durchschnitt ? '+' : ''}{(eigenMieteProQm - durchschnitt).toFixed(2)} €/m² {eigenMieteProQm >= durchschnitt ? 'über' : 'unter'} Durchschnitt
-                  </span>
-                </p>
-              )}
+                </thead>
+                <tbody>
+                  {displayStadtteile.map((s) => {
+                    const trend = modus === 'kauf' ? s.trendKauf : s.trendMiete
+                    const farbe = getPreisfarbe(modus === 'kauf' ? s.kaufpreisProQm : s.mietpreisProQm, modus)
+                    return (
+                      <tr key={`${s.stadt}-${s.name}`} className="border-b last:border-0 hover:bg-muted/50">
+                        <td className="py-2 flex items-center gap-2">
+                          <span className="inline-block w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: farbe }} />
+                          {s.name}
+                        </td>
+                        <td className="py-2 pl-2 text-muted-foreground">{s.stadt}</td>
+                        <td className={`py-2 text-right tabular-nums ${modus === 'kauf' ? 'font-semibold' : 'text-muted-foreground'}`}>
+                          {s.kaufpreisProQm.toLocaleString('de-DE')} €
+                        </td>
+                        <td className={`py-2 text-right tabular-nums ${modus === 'miete' ? 'font-semibold' : 'text-muted-foreground'}`}>
+                          {s.mietpreisProQm.toFixed(2)} €
+                        </td>
+                        <td className="py-2 text-right tabular-nums">
+                          {trend != null ? (
+                            <span className={`inline-flex items-center gap-0.5 ${trend > 0 ? 'text-success' : trend < 0 ? 'text-destructive' : 'text-muted-foreground'}`}>
+                              {trend > 0 ? <TrendingUp className="h-3 w-3" /> : trend < 0 ? <TrendingDown className="h-3 w-3" /> : <Minus className="h-3 w-3" />}
+                              {trend > 0 ? '+' : ''}{trend.toFixed(1)}%
+                            </span>
+                          ) : '—'}
+                        </td>
+                      </tr>
+                    )
+                  })}
+                  {/* Eigenes Objekt */}
+                  {project.wohnflaeche > 0 && (
+                    <tr className="border-t-2 border-primary/20 bg-primary/5 font-medium">
+                      <td className="py-2 flex items-center gap-2">
+                        <Home className="h-3.5 w-3.5 text-primary shrink-0" />
+                        {project.name || 'Mein Objekt'}
+                      </td>
+                      <td className="py-2 pl-2 text-muted-foreground">{project.address ? project.address.split(',')[0] : '—'}</td>
+                      <td className={`py-2 text-right tabular-nums ${modus === 'kauf' ? 'font-bold text-primary' : 'text-muted-foreground'}`}>
+                        {eigenPreisProQm.toLocaleString('de-DE', { maximumFractionDigits: 0 })} €
+                      </td>
+                      <td className={`py-2 text-right tabular-nums ${modus === 'miete' ? 'font-bold text-primary' : 'text-muted-foreground'}`}>
+                        {eigenMieteProQm.toFixed(2)} €
+                      </td>
+                      <td className="py-2 text-right text-muted-foreground">—</td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
             </div>
-          )}
-        </CardContent>
+
+            {/* Toggle all / nearby */}
+            {nearbyStadtteile.length < allSorted.length && (
+              <button
+                className="mt-3 text-xs text-teal-600 hover:text-teal-700 font-medium transition-colors"
+                onClick={() => setShowAllStadtteile(!showAllStadtteile)}
+              >
+                {showAllStadtteile
+                  ? `Nur Stadtteile in der Nähe anzeigen (${nearbyStadtteile.length})`
+                  : `Alle Stadtteile anzeigen (${allSorted.length})`
+                }
+              </button>
+            )}
+          </CardContent>
+        )}
       </Card>
+      <KpiInfoDialog
+        open={marktKpiInfo !== null}
+        onOpenChange={(open) => { if (!open) setMarktKpiInfo(null) }}
+        kpiKey={marktKpiInfo ?? ''}
+        currentValue={modus === 'kauf' ? `${eigenPreisProQm.toLocaleString('de-DE', { maximumFractionDigits: 0 })} €/m²` : `${eigenMieteProQm.toFixed(2)} €/m²`}
+        result={result}
+        project={project}
+      />
     </div>
   )
 }

@@ -40,11 +40,11 @@ export const KPI_INFO: Record<string, KpiInfoData> = {
       + '(Kreditrate, Bewirtschaftungskosten, Steuern) von den Mieteinnahmen '
       + 'jeden Monat übrig bleibt. Er ist die wichtigste Kennzahl für die laufende '
       + 'Liquidität eines Immobilieninvestments.',
-    formula: 'Nettomiete − Betriebskosten − Kreditrate (Zins + Tilgung) − Steuerlast',
+    formula: 'Nettomiete − Betriebskosten − Kreditrate (Zins + Tilgung) ± Steuer',
     interpretation: {
       gut: 'Positiv (> 100 €/Mon): Die Immobilie trägt sich selbst und wirft Überschuss ab.',
-      mittel: 'Um 0 €: Die Immobilie trägt sich gerade so. Tilgung baut dennoch Vermögen auf.',
-      schlecht: 'Negativ (< −200 €/Mon): Sie müssen monatlich zuschießen.',
+      mittel: 'Um 0 €: Die Immobilie trägt sich selbst. Tilgung und Wertsteigerung bauen parallel Vermögen auf.',
+      schlecht: 'Negativ (< −200 €/Mon): Du schießt monatlich zu – die Tilgung und Wertentwicklung können das langfristig dennoch ausgleichen.',
     },
     metaphor: {
       title: 'Wie ein Bankkonto',
@@ -189,11 +189,11 @@ export const KPI_INFO: Record<string, KpiInfoData> = {
       'Der jährliche Cashflow nach Steuer fasst den monatlichen Cashflow auf Jahresbasis '
       + 'zusammen. Er zeigt den tatsächlichen jährlichen Geldfluss nach allen Abzügen '
       + 'und ist die Grundlage für den langfristigen Investmentvergleich.',
-    formula: '(Nettomiete − Betriebskosten − Kreditrate − Steuerlast) × 12 Monate',
+    formula: '(Nettomiete − Betriebskosten − Kreditrate ± Steuer) × 12 Monate',
     interpretation: {
       gut: 'Über 1.200 €/Jahr: Solider positiver Cashflow, die Immobilie trägt sich.',
-      mittel: 'Um 0 €/Jahr: Break-even — kein Zuschuss nötig, aber auch kein Überschuss.',
-      schlecht: 'Unter −2.400 €/Jahr: Hoher jährlicher Zuschuss von über 200 €/Monat nötig.',
+      mittel: 'Um 0 €/Jahr: Break-even — die Immobilie trägt sich. Vermögensaufbau durch Tilgung und Wertsteigerung läuft parallel.',
+      schlecht: 'Unter −2.400 €/Jahr: Du schießt monatlich zu. Bedenke: Tilgung und Wertentwicklung können das langfristig mehr als ausgleichen.',
     },
     metaphor: {
       title: 'Ihr jährliches Immobilien-Gehalt',
@@ -308,6 +308,73 @@ export const KPI_INFO: Record<string, KpiInfoData> = {
         + 'mit dem Durchschnittspreis in verschiedenen Geschäften der Umgebung. '
         + 'Liegt Ihr Preis deutlich darunter, haben Sie ein Schnäppchen gemacht. '
         + 'Liegt er deutlich darüber, sollten Sie prüfen, ob die Qualität den Aufpreis rechtfertigt.',
+    },
+  },
+  steuerEffekt: {
+    label: 'Steuerliche Auswirkung',
+    description:
+      'Die steuerliche Auswirkung zeigt, wie sich die Immobilie auf deine Einkommensteuer auswirkt. '
+      + 'Bei Vermietung können Zinsen, AfA und Betriebskosten von den Mieteinnahmen abgezogen werden. '
+      + 'Übersteigen die Abzüge die Einnahmen, entsteht eine Steuerersparnis (grün). '
+      + 'Übersteigen die Einnahmen die Abzüge, entsteht eine Steuerlast – die aber durch positiven Cashflow '
+      + 'und Wertentwicklung der Immobilie mehr als kompensiert werden kann.',
+    formula: '(Mieteinnahmen − absetzbare Kosten) × Steuersatz',
+    interpretation: {
+      gut: 'Grün: Du bekommst Steuern zurück – die absetzbaren Kosten übersteigen die Mieteinnahmen.',
+      mittel: 'Gelb: Steuerlast vorhanden, aber der Gesamt-Cashflow bleibt positiv – die Immobilie trägt sich trotzdem.',
+      schlecht: 'Rot: Steuerlast drückt den Cashflow ins Negative – Tilgung und Wertsteigerung können das langfristig ausgleichen.',
+    },
+    metaphor: {
+      title: 'Wie eine Steuerbrille für deine Immobilie',
+      text: 'Stell dir vor, du schaust durch eine Steuerbrille auf deine Immobilie. '
+        + 'Durch die Brille siehst du nicht den echten Gewinn, sondern was das Finanzamt sieht: '
+        + 'Mieteinnahmen minus alles, was du absetzen kannst (Zinsen, Abschreibung, Kosten). '
+        + 'Ist das Ergebnis negativ, freut sich dein Portemonnaie – du bekommst Steuern zurück. '
+        + 'Ist es positiv, zahlst du etwas drauf – aber das heißt auch, dass deine Immobilie echten Ertrag abwirft.',
+    },
+  },
+  afaBetrag: {
+    label: 'AfA-Betrag',
+    description:
+      'Die Absetzung für Abnutzung (AfA) ist die jährliche steuerliche Abschreibung des Gebäudewerts. '
+      + 'Nur der Gebäudeanteil (ohne Grundstück) wird abgeschrieben. Der AfA-Satz richtet sich nach dem Baujahr: '
+      + '2 % bei Baujahr ab 1925, 2,5 % bei Baujahr vor 1925, und 3 % für Neubauten ab 2023. '
+      + 'Die AfA reduziert dein zu versteuerndes Einkommen und damit deine Steuerlast – '
+      + 'sie ist einer der größten steuerlichen Vorteile bei Immobilieninvestments.',
+    formula: 'Gebäudewert × AfA-Satz',
+    interpretation: {
+      gut: 'Hohe AfA (> 5.000 €/J): Starke steuerliche Entlastung, reduziert die Steuerlast deutlich.',
+      mittel: 'Mittlere AfA (2.000–5.000 €/J): Solide Steuerersparnis, typisch für mittlere Kaufpreise.',
+      schlecht: 'Niedrige AfA (< 2.000 €/J): Geringe steuerliche Wirkung – evtl. Gebäudeanteil prüfen.',
+    },
+    metaphor: {
+      title: 'Wie ein unsichtbarer Rabatt vom Finanzamt',
+      text: 'Stell dir vor, das Finanzamt gibt dir jedes Jahr einen Rabatt auf deine Steuern, '
+        + 'weil dein Gebäude theoretisch an Wert verliert – auch wenn es in der Realität oft steigt. '
+        + 'Dieser Rabatt ist die AfA. Je höher der Gebäudewert und der AfA-Satz, desto größer der Rabatt. '
+        + 'Das Beste: Du bekommst den Rabatt jedes Jahr automatisch, ohne etwas dafür tun zu müssen.',
+    },
+  },
+  effSteuersatz: {
+    label: 'Effektiver Steuersatz',
+    description:
+      'Der persönliche Steuersatz bestimmt, wie stark sich steuerliche Vorteile und Nachteile '
+      + 'der Immobilie auswirken. Bei einem hohen Steuersatz sparst du durch AfA und Zinsabzug mehr Steuern, '
+      + 'zahlst aber auch mehr, wenn die Mieteinnahmen die Abzüge übersteigen. '
+      + 'Der Steuersatz bezieht sich auf deinen persönlichen Grenzsteuersatz (Einkommensteuer).',
+    formula: 'Persönlicher Grenzsteuersatz (Einkommensteuer)',
+    interpretation: {
+      gut: 'Ab 35 %: Steuerliche Vorteile (AfA, Zinsen) wirken besonders stark.',
+      mittel: '25–35 %: Moderate steuerliche Auswirkung in beide Richtungen.',
+      schlecht: 'Unter 25 %: Geringere Steuereffekte – Immobilie muss sich vor allem über Cashflow und Wertentwicklung rechnen.',
+    },
+    metaphor: {
+      title: 'Wie ein Hebel für deine Steuervorteile',
+      text: 'Stell dir den Steuersatz wie einen Hebel vor. Je höher er steht, '
+        + 'desto stärker wirken steuerliche Abzüge: Jeder Euro AfA oder Zinsabzug spart dir '
+        + 'mehr Steuern. Bei 42 % Steuersatz bekommst du für jeden absetzbaren Euro 42 Cent zurück. '
+        + 'Bei 25 % sind es nur 25 Cent. Der gleiche Hebel wirkt aber auch andersrum: '
+        + 'Überschüsse werden stärker besteuert.',
     },
   },
   vermoegenszuwachs: {

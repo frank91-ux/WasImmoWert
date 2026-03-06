@@ -1,11 +1,11 @@
 import type { ReactNode } from 'react'
 import type { Project, CalculationResult } from '@/calc/types'
 import { useUiStore } from '@/store/useUiStore'
+import { useDashboardStore } from '@/store/useDashboardStore'
 import { VerkaufSimulation } from '@/components/simulation/VerkaufSimulation'
 import { ZinsSimulation } from '@/components/simulation/ZinsSimulation'
 import { MietsteigerungSimulation } from '@/components/simulation/MietsteigerungSimulation'
 import { AnschlussfinanzierungCard } from '@/components/simulation/AnschlussfinanzierungCard'
-import { SimulationView } from '@/components/simulation/SimulationView'
 import { CashflowChart } from '@/components/charts/CashflowChart'
 import { ThreeYearCostChart } from '@/components/charts/ThreeYearCostChart'
 import { InvestmentComparisonChart } from '@/components/charts/InvestmentComparisonChart'
@@ -48,6 +48,14 @@ function SortableChartItem({ id, children }: { id: string; children: ReactNode }
   )
 }
 
+/** Map internal chart IDs to widget-registry IDs */
+const CHART_TO_WIDGET: Record<string, string> = {
+  tilgungsplanChart: 'sim-tilgungsplan',
+  threeYearCost: 'sim-threeYearCost',
+  cashflowEquityCharts: 'sim-cashflowEquity',
+  investmentComparison: 'sim-investmentComp',
+}
+
 interface WeitereSimulationenTabProps {
   project: Project
   result: CalculationResult
@@ -56,6 +64,7 @@ interface WeitereSimulationenTabProps {
 
 export function WeitereSimulationenTab({ project, result, onChange }: WeitereSimulationenTabProps) {
   const { chartOrder, setChartOrder } = useUiStore()
+  const visibleWidgets = useDashboardStore((s) => s.getWidgetsForSection('simulationen'))
 
   const chartSensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 10 } })
@@ -68,6 +77,12 @@ export function WeitereSimulationenTab({ project, result, onChange }: WeitereSim
   if (!analyseChartIds.includes('threeYearCost')) {
     analyseChartIds.unshift('threeYearCost')
   }
+
+  // Filter to only show charts that are enabled in the widget drawer
+  const visibleChartIds = analyseChartIds.filter((id) => {
+    const widgetId = CHART_TO_WIDGET[id]
+    return widgetId ? visibleWidgets.includes(widgetId) : true
+  })
 
   const handleChartDragEnd = (event: DragEndEvent) => {
     const { active, over } = event
@@ -83,54 +98,67 @@ export function WeitereSimulationenTab({ project, result, onChange }: WeitereSim
 
   return (
     <div className="space-y-6">
-      <VerkaufSimulation project={project} result={result} />
-      <ZinsSimulation project={project} result={result} />
-      <MietsteigerungSimulation project={project} result={result} />
-      <AnschlussfinanzierungCard project={project} result={result} />
+      {visibleWidgets.includes('sim-verkauf') && (
+        <VerkaufSimulation project={project} result={result} />
+      )}
+      {(visibleWidgets.includes('sim-zins') || visibleWidgets.includes('sim-anschluss')) && (
+        <ZinsSimulation project={project} result={result} onChange={onChange} />
+      )}
+      {visibleWidgets.includes('sim-mietsteigerung') && (
+        <MietsteigerungSimulation project={project} result={result} />
+      )}
 
-      <DndContext sensors={chartSensors} collisionDetection={closestCenter} onDragEnd={handleChartDragEnd}>
-        <SortableContext items={analyseChartIds} strategy={verticalListSortingStrategy}>
-          <div className="space-y-6">
-            {analyseChartIds.map((chartId) => {
-              switch (chartId) {
-                case 'tilgungsplanChart':
-                  return (
-                    <SortableChartItem key={chartId} id={chartId}>
-                      <TilgungsplanChart projection={result.projection} zinsbindung={project.zinsbindung} zinsbindungPeriods={project.zinsbindungPeriods} />
-                    </SortableChartItem>
-                  )
-                case 'threeYearCost':
-                  return (
-                    <SortableChartItem key={chartId} id={chartId}>
-                      <ThreeYearCostChart result={result} nutzungsart={project.nutzungsart} />
-                    </SortableChartItem>
-                  )
-                case 'cashflowEquityCharts':
-                  return (
-                    <SortableChartItem key={chartId} id={chartId}>
-                      <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
-                        <CashflowChart result={result} nutzungsart={project.nutzungsart} zinsbindung={project.zinsbindung} zinsbindungPeriods={project.zinsbindungPeriods} />
-                        <EquityGrowthChart projection={result.projection} zinsbindung={project.zinsbindung} zinsbindungPeriods={project.zinsbindungPeriods} />
-                      </div>
-                    </SortableChartItem>
-                  )
-                case 'investmentComparison':
-                  return (
-                    <SortableChartItem key={chartId} id={chartId}>
-                      <InvestmentComparisonChart
-                        comparison={result.investmentComparison}
-                        eigenkapital={project.eigenkapital}
-                        etfRendite={project.etfRendite}
-                      />
-                    </SortableChartItem>
-                  )
-                default:
-                  return null
-              }
-            })}
-          </div>
-        </SortableContext>
-      </DndContext>
+      {visibleChartIds.length > 0 && (
+        <DndContext sensors={chartSensors} collisionDetection={closestCenter} onDragEnd={handleChartDragEnd}>
+          <SortableContext items={visibleChartIds} strategy={verticalListSortingStrategy}>
+            <div className="space-y-6">
+              {visibleChartIds.map((chartId) => {
+                switch (chartId) {
+                  case 'tilgungsplanChart':
+                    return (
+                      <SortableChartItem key={chartId} id={chartId}>
+                        <TilgungsplanChart projection={result.projection} zinsbindung={project.zinsbindung} zinsbindungPeriods={project.zinsbindungPeriods} />
+                      </SortableChartItem>
+                    )
+                  case 'threeYearCost':
+                    return (
+                      <SortableChartItem key={chartId} id={chartId}>
+                        <ThreeYearCostChart result={result} nutzungsart={project.nutzungsart} />
+                      </SortableChartItem>
+                    )
+                  case 'cashflowEquityCharts':
+                    return (
+                      <SortableChartItem key={chartId} id={chartId}>
+                        <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
+                          <CashflowChart result={result} nutzungsart={project.nutzungsart} zinsbindung={project.zinsbindung} zinsbindungPeriods={project.zinsbindungPeriods} />
+                          <EquityGrowthChart projection={result.projection} zinsbindung={project.zinsbindung} zinsbindungPeriods={project.zinsbindungPeriods} />
+                        </div>
+                      </SortableChartItem>
+                    )
+                  case 'investmentComparison':
+                    return (
+                      <SortableChartItem key={chartId} id={chartId}>
+                        <InvestmentComparisonChart
+                          comparison={result.investmentComparison}
+                          eigenkapital={project.eigenkapital}
+                          etfRendite={project.etfRendite}
+                        />
+                      </SortableChartItem>
+                    )
+                  default:
+                    return null
+                }
+              })}
+            </div>
+          </SortableContext>
+        </DndContext>
+      )}
+
+      {visibleWidgets.length === 0 && (
+        <div className="text-center py-12 text-muted-foreground text-sm">
+          Keine Simulationen aktiviert. Aktiviere Widgets in der rechten Sidebar.
+        </div>
+      )}
     </div>
   )
 }

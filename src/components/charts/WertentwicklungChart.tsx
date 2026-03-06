@@ -1,16 +1,29 @@
+import { useState } from 'react'
 import type { YearlyProjection } from '@/calc/types'
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts'
-import { ChartCard } from './ChartCard'
+import { ChartCard, type TimeRange } from './ChartCard'
 import { formatEur } from '@/lib/format'
-import { TOOLTIP_STYLE, AXIS_TICK, GRID_STYLE, LEGEND_STYLE, ANIMATION_DURATION } from './chartTheme'
+import { TOOLTIP_STYLE, AXIS_TICK, GRID_STYLE, LEGEND_STYLE, ANIMATION_DURATION, CHART_COLORS } from './chartTheme'
 
 interface WertentwicklungChartProps {
   projection: YearlyProjection[]
   baseProjection?: YearlyProjection[]  // Original for comparison when simulation is active
+  defaultTimeRange?: TimeRange
 }
 
-export function WertentwicklungChart({ projection, baseProjection }: WertentwicklungChartProps) {
-  const data = projection.map((y, i) => ({
+function getMaxYear(range: TimeRange, payoffYear: number | null, totalYears: number): number {
+  switch (range) {
+    case '3': return Math.min(3, totalYears)
+    case '10': return Math.min(10, totalYears)
+    case '15': return Math.min(15, totalYears)
+    case 'end': return payoffYear ? Math.min(payoffYear + 2, totalYears) : totalYears
+  }
+}
+
+export function WertentwicklungChart({ projection, baseProjection, defaultTimeRange = 'end' }: WertentwicklungChartProps) {
+  const [timeRange, setTimeRange] = useState<TimeRange>(defaultTimeRange)
+
+  const allData = projection.map((y, i) => ({
     year: `Jahr ${y.year}`,
     eigenkapital: Math.round(y.eigenkapitalImObjekt),
     immobilienWert: Math.round(y.immobilienWert),
@@ -23,19 +36,26 @@ export function WertentwicklungChart({ projection, baseProjection }: Wertentwick
     } : {}),
   }))
 
+  const payoffYear = projection.find((y) => y.restschuld <= 0)?.year ?? null
+  const maxYear = getMaxYear(timeRange, payoffYear, allData.length)
+  const data = allData.slice(0, maxYear)
+
+  const xInterval = maxYear <= 5 ? 0 : Math.max(1, Math.floor(maxYear / 6) - 1)
   const hasBaseline = !!baseProjection
 
   return (
     <ChartCard
       title="Wertentwicklung"
       subtitle={hasBaseline ? 'Simulation vs. Original (gestrichelt)' : 'Immobilienwert, Eigenkapital & Restschuld'}
+      timeRange={timeRange}
+      onTimeRangeChange={setTimeRange}
     >
-      <div className="h-72">
+      <div className="h-44 lg:h-52">
         <ResponsiveContainer width="100%" height="100%">
           <AreaChart data={data}>
             <CartesianGrid {...GRID_STYLE} />
-            <XAxis dataKey="year" tick={AXIS_TICK} interval={4} />
-            <YAxis tick={AXIS_TICK} tickFormatter={(v) => `${(v / 1000).toFixed(0)}k`} />
+            <XAxis dataKey="year" tick={{ ...AXIS_TICK, fontSize: 10 }} interval={xInterval} />
+            <YAxis tick={{ ...AXIS_TICK, fontSize: 10 }} tickFormatter={(v) => `${(v / 1000).toFixed(0)}k`} />
             <Tooltip
               formatter={(value, name) => {
                 const labels: Record<string, string> = {
@@ -52,26 +72,26 @@ export function WertentwicklungChart({ projection, baseProjection }: Wertentwick
             />
             <Legend
               iconType="line"
-              iconSize={12}
-              wrapperStyle={LEGEND_STYLE}
+              iconSize={10}
+              wrapperStyle={{ ...LEGEND_STYLE, fontSize: 9, lineHeight: '14px' }}
               payload={[
-                { value: 'Eigenkapital', type: 'line', color: 'var(--color-primary)', id: 'ek' },
-                { value: 'Immobilienwert', type: 'line', color: '#16a34a', id: 'immo' },
-                { value: 'Restschuld', type: 'line', color: '#ef4444', id: 'rest' },
-                { value: 'Kum. Cashflow', type: 'line', color: '#0ea5e9', id: 'cf' },
+                { value: 'EK', type: 'line', color: CHART_COLORS.primary, id: 'ek' },
+                { value: 'Wert', type: 'line', color: CHART_COLORS.positive, id: 'immo' },
+                { value: 'Schuld', type: 'line', color: CHART_COLORS.negative, id: 'rest' },
+                { value: 'Cashflow', type: 'line', color: CHART_COLORS.palette[7], id: 'cf' },
                 ...(hasBaseline ? [
-                  { value: 'Original (EK)', type: 'plainline' as const, color: 'var(--color-muted-foreground)', id: 'bek' },
+                  { value: 'Original', type: 'plainline' as const, color: CHART_COLORS.muted, id: 'bek' },
                 ] : []),
               ]}
             />
             <defs>
               <linearGradient id="gradEkAi" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="var(--color-primary)" stopOpacity={0.25} />
-                <stop offset="95%" stopColor="var(--color-primary)" stopOpacity={0.02} />
+                <stop offset="5%" stopColor={CHART_COLORS.primary} stopOpacity={0.25} />
+                <stop offset="95%" stopColor={CHART_COLORS.primary} stopOpacity={0.02} />
               </linearGradient>
               <linearGradient id="gradDebtAi" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#ef4444" stopOpacity={0.15} />
-                <stop offset="95%" stopColor="#ef4444" stopOpacity={0.02} />
+                <stop offset="5%" stopColor={CHART_COLORS.negative} stopOpacity={0.15} />
+                <stop offset="95%" stopColor={CHART_COLORS.negative} stopOpacity={0.02} />
               </linearGradient>
             </defs>
             {/* Baseline dashed overlays when simulation active */}
@@ -81,7 +101,7 @@ export function WertentwicklungChart({ projection, baseProjection }: Wertentwick
                   type="monotone"
                   dataKey="basisEigenkapital"
                   fill="none"
-                  stroke="var(--color-muted-foreground)"
+                  stroke={CHART_COLORS.muted}
                   strokeWidth={1.5}
                   strokeDasharray="6 4"
                   animationDuration={ANIMATION_DURATION}
@@ -91,7 +111,7 @@ export function WertentwicklungChart({ projection, baseProjection }: Wertentwick
                   type="monotone"
                   dataKey="basisCashflow"
                   fill="none"
-                  stroke="var(--color-muted-foreground)"
+                  stroke={CHART_COLORS.muted}
                   strokeWidth={1.5}
                   strokeDasharray="4 3"
                   animationDuration={ANIMATION_DURATION}
@@ -103,7 +123,7 @@ export function WertentwicklungChart({ projection, baseProjection }: Wertentwick
               type="monotone"
               dataKey="immobilienWert"
               fill="none"
-              stroke="#16a34a"
+              stroke={CHART_COLORS.positive}
               strokeWidth={2}
               strokeDasharray="6 3"
               animationDuration={ANIMATION_DURATION}
@@ -112,7 +132,7 @@ export function WertentwicklungChart({ projection, baseProjection }: Wertentwick
               type="monotone"
               dataKey="eigenkapital"
               fill="url(#gradEkAi)"
-              stroke="var(--color-primary)"
+              stroke={CHART_COLORS.primary}
               strokeWidth={2}
               animationDuration={ANIMATION_DURATION}
             />
@@ -120,7 +140,7 @@ export function WertentwicklungChart({ projection, baseProjection }: Wertentwick
               type="monotone"
               dataKey="restschuld"
               fill="url(#gradDebtAi)"
-              stroke="#ef4444"
+              stroke={CHART_COLORS.negative}
               strokeWidth={2}
               animationDuration={ANIMATION_DURATION}
             />
@@ -128,7 +148,7 @@ export function WertentwicklungChart({ projection, baseProjection }: Wertentwick
               type="monotone"
               dataKey="kumulierterCashflow"
               fill="none"
-              stroke="#0ea5e9"
+              stroke={CHART_COLORS.palette[7]}
               strokeWidth={2}
               animationDuration={ANIMATION_DURATION}
             />

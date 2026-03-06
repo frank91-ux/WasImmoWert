@@ -82,7 +82,7 @@ export function TaxBreakdown({ tax, project }: TaxBreakdownProps) {
               <td className="py-1.5 text-xs" colSpan={2}>
                 {tax.gesamtSteuerbelastungJahr < 0
                   ? 'Negativer Wert = Steuerersparnis durch die Immobilie'
-                  : 'Zusätzliche Steuerlast durch die Mieteinnahmen'
+                  : 'Steuerlast auf Mieteinnahmen – der Cashflow kann trotzdem positiv sein. Zusätzlich profitierst du von der Wertentwicklung der Immobilie.'
                 }
               </td>
             </tr>

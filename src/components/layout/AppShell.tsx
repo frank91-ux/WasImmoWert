@@ -18,7 +18,7 @@ export function AppShell() {
       <div className="flex flex-1 flex-col overflow-hidden min-w-0">
         <Header />
         <main className="flex-1 overflow-auto bg-background">
-          <div className="mx-auto max-w-7xl p-4 lg:p-6">
+          <div className="mx-auto max-w-[1400px] p-4 lg:p-6">
             <AnimatePresence mode="wait">
               <motion.div
                 key={location.pathname}

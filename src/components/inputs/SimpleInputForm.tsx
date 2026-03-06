@@ -5,10 +5,13 @@ import { AddressAutocomplete, type PlaceResult } from '@/components/shared/Addre
 import { CurrencyInput, PercentInput } from '@/components/shared/CurrencyInput'
 import { CollapsibleSection } from '@/components/shared/CollapsibleSection'
 import { ParameterSlider } from '@/components/simulation/ParameterSlider'
-import type { Project, Bundesland, PropertyType, ModernisierungPosten, NebenkostenPosten } from '@/calc/types'
+import type { Project, Bundesland, PropertyType, ModernisierungPosten, NebenkostenPosten, Wohnung } from '@/calc/types'
 import { v4 as uuidv4 } from 'uuid'
-import { Plus, Trash2 } from 'lucide-react'
+import { Plus, Trash2, Building2, Info } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { Switch } from '@/components/ui/switch'
 import { BUNDESLAND_LABELS, GRUNDERWERBSTEUER_SAETZE } from '@/calc/grunderwerbsteuer'
+import { getMarktdatenForBundesland } from '@/data/marktdaten'
 import { calculateAfaRate } from '@/calc/tax'
 import { useUiStore } from '@/store/useUiStore'
 
@@ -139,25 +142,148 @@ export function SimpleInputForm({ project, onChange }: SimpleInputFormProps) {
 
       {project.nutzungsart === 'vermietung' ? (
         <CollapsibleSection title="Mieteinnahmen" defaultOpen>
-          <CurrencyInput
-            label="Monatliche Kaltmiete"
-            value={project.monatsmieteKalt}
-            onChange={(v) => onChange({ monatsmieteKalt: v })}
-            min={0}
-            step={10}
-          />
-          {project.address && (
-            <p className="text-xs text-muted-foreground">
-              Marktdaten finden Sie im{' '}
-              <a
-                href={`https://www.homeday.de/de/preisatlas/${project.address.split(' ').pop()?.toLowerCase() || ''}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-primary hover:underline"
-              >
-                Homeday Preisatlas
-              </a>
-            </p>
+          {/* MFH Toggle */}
+          <div className="flex items-center justify-between mb-3 p-2.5 rounded-lg bg-muted/50">
+            <div className="flex items-center gap-2">
+              <Building2 className="h-4 w-4 text-muted-foreground" />
+              <Label htmlFor="mfh-toggle" className="text-sm font-medium cursor-pointer">
+                Mehrfamilienhaus
+              </Label>
+            </div>
+            <Switch
+              id="mfh-toggle"
+              checked={project.isMehrfamilienhaus}
+              onCheckedChange={(checked: boolean) => onChange({ isMehrfamilienhaus: checked })}
+            />
+          </div>
+
+          {!project.isMehrfamilienhaus ? (
+            <>
+              <CurrencyInput
+                label="Monatliche Kaltmiete"
+                value={project.monatsmieteKalt}
+                onChange={(v) => onChange({ monatsmieteKalt: v })}
+                min={0}
+                step={10}
+              />
+              {project.address && (
+                <p className="text-xs text-muted-foreground">
+                  Marktdaten finden Sie im{' '}
+                  <a
+                    href={`https://www.homeday.de/de/preisatlas/${project.address.split(' ').pop()?.toLowerCase() || ''}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-primary hover:underline"
+                  >
+                    Homeday Preisatlas
+                  </a>
+                </p>
+              )}
+            </>
+          ) : (
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium">
+                  {project.wohnungen?.length || 0} Wohnungen
+                  {project.wohnungen?.length > 0 && (
+                    <span className="text-muted-foreground ml-2">
+                      Gesamt: {project.wohnungen.reduce((s, w) => s + w.mietpreis, 0).toLocaleString('de-DE')} €/Mon
+                    </span>
+                  )}
+                </span>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="gap-1"
+                  onClick={() => {
+                    const newW: Wohnung = {
+                      id: uuidv4(),
+                      qm: 60,
+                      mietpreis: 600,
+                      nebenkosten: 150,
+                    }
+                    onChange({ wohnungen: [...(project.wohnungen ?? []), newW] })
+                  }}
+                >
+                  <Plus className="h-3.5 w-3.5" />
+                  Wohnung
+                </Button>
+              </div>
+
+              {(project.wohnungen ?? []).map((wohnung, idx) => {
+                const markt = getMarktdatenForBundesland(project.bundesland)
+                const pricePerQm = wohnung.qm > 0 ? wohnung.mietpreis / wohnung.qm : 0
+                const diff = markt.mietpreisProQm > 0 ? ((pricePerQm / markt.mietpreisProQm) - 1) * 100 : 0
+
+                return (
+                  <div key={wohnung.id} className="flex gap-2 items-end p-3 rounded-lg border bg-card">
+                    <div className="text-xs font-semibold text-muted-foreground pt-5 w-6 shrink-0">
+                      #{idx + 1}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <CurrencyInput
+                        label="m²"
+                        value={wohnung.qm}
+                        onChange={(v) => {
+                          const updated = [...(project.wohnungen ?? [])]
+                          updated[idx] = { ...updated[idx], qm: v }
+                          onChange({ wohnungen: updated })
+                        }}
+                        min={1}
+                        step={1}
+                      />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <CurrencyInput
+                        label="Miete €/Mon"
+                        value={wohnung.mietpreis}
+                        onChange={(v) => {
+                          const updated = [...(project.wohnungen ?? [])]
+                          updated[idx] = { ...updated[idx], mietpreis: v }
+                          onChange({ wohnungen: updated })
+                        }}
+                        min={0}
+                        step={10}
+                      />
+                    </div>
+                    <div className="shrink-0 flex flex-col items-center gap-0.5 pb-0.5">
+                      <span className={`text-[10px] font-medium ${
+                        diff > 10 ? 'text-emerald-600' : diff < -10 ? 'text-red-500' : 'text-muted-foreground'
+                      }`}>
+                        {pricePerQm.toFixed(1)} €/m²
+                      </span>
+                      <button
+                        className="p-1 rounded hover:bg-destructive/10 text-destructive/60 hover:text-destructive transition-colors"
+                        onClick={() => {
+                          const updated = (project.wohnungen ?? []).filter((_, i) => i !== idx)
+                          onChange({ wohnungen: updated })
+                        }}
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </button>
+                    </div>
+                  </div>
+                )
+              })}
+
+              {/* Market comparison info */}
+              {(project.wohnungen ?? []).length > 0 && (
+                <div className="flex items-start gap-2 p-2.5 rounded-lg bg-teal-50 dark:bg-teal-950/20 border border-teal-200 dark:border-teal-800 text-sm">
+                  <Info className="h-4 w-4 text-teal-600 shrink-0 mt-0.5" />
+                  <div>
+                    <span className="font-medium text-teal-800 dark:text-teal-200">Marktvergleich {BUNDESLAND_LABELS[project.bundesland]}:</span>
+                    <span className="text-teal-700 dark:text-teal-300 ml-1">
+                      Ø {getMarktdatenForBundesland(project.bundesland).mietpreisProQm.toFixed(2)} €/m²
+                    </span>
+                    {project.wohnungen.length > 0 && project.wohnflaeche > 0 && (
+                      <span className="text-teal-600 dark:text-teal-400 ml-1">
+                        · Ihre Ø: {(project.wohnungen.reduce((s, w) => s + w.mietpreis, 0) / project.wohnungen.reduce((s, w) => s + w.qm, 0) || 0).toFixed(2)} €/m²
+                      </span>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
           )}
         </CollapsibleSection>
       ) : (

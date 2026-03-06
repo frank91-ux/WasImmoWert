@@ -5,7 +5,7 @@ import {
 } from 'recharts'
 import { ChartCard } from './ChartCard'
 import { formatEur } from '@/lib/format'
-import { TOOLTIP_STYLE, AXIS_TICK, GRID_STYLE, BAR_RADIUS, ANIMATION_DURATION, LEGEND_STYLE } from './chartTheme'
+import { TOOLTIP_STYLE, AXIS_TICK, GRID_STYLE, BAR_RADIUS, ANIMATION_DURATION, LEGEND_STYLE, CHART_COLORS } from './chartTheme'
 
 interface ThreeYearCostChartProps {
   result: CalculationResult
@@ -13,13 +13,13 @@ interface ThreeYearCostChartProps {
 }
 
 const COLORS = {
-  mieteinnahmen: '#16a34a',
-  nebenkosten: '#f97316',
-  zinsen: '#ef4444',
-  tilgung: 'var(--color-primary)',
-  steuer: '#8b5cf6',
-  zinsanteil: '#ef4444',
-  tilgungsanteil: '#3b82f6',
+  mieteinnahmen: CHART_COLORS.positive,
+  nebenkosten: CHART_COLORS.warning,
+  zinsen: CHART_COLORS.negative,
+  tilgung: CHART_COLORS.primary,
+  steuer: CHART_COLORS.palette[5],
+  zinsanteil: CHART_COLORS.negative,
+  tilgungsanteil: CHART_COLORS.palette[4],
 }
 
 const TOOLTIP_LABELS: Record<string, string> = {
@@ -93,7 +93,7 @@ export function ThreeYearCostChart({ result, nutzungsart = 'vermietung' }: Three
                 { value: 'Tilgungsanteil (Kredit)', type: 'rect', color: COLORS.tilgungsanteil, id: 'ta' },
               ]}
             />
-            <ReferenceLine y={0} stroke="var(--color-muted-foreground)" strokeDasharray="3 3" strokeOpacity={0.5} />
+            <ReferenceLine y={0} stroke={CHART_COLORS.muted} strokeDasharray="3 3" strokeOpacity={0.5} />
 
             {/* Cashflow stack */}
             <Bar dataKey="Mieteinnahmen" stackId="cashflow" fill={COLORS.mieteinnahmen} radius={BAR_RADIUS} animationDuration={ANIMATION_DURATION} />

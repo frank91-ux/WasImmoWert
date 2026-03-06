@@ -8,7 +8,12 @@ import { calculateKpis } from './kpis'
 import { calculateProjection } from './projection'
 import { calculateInvestmentComparison } from './investment-comparison'
 
-export function calculateAll(project: Project): CalculationResult {
+export function calculateAll(inputProject: Project): CalculationResult {
+  // MFH: sum apartment rents into monatsmieteKalt
+  const project = inputProject.isMehrfamilienhaus && inputProject.wohnungen?.length > 0
+    ? { ...inputProject, monatsmieteKalt: inputProject.wohnungen.reduce((sum, w) => sum + w.mietpreis, 0) }
+    : inputProject
+
   const kaufnebenkosten = calculateKaufnebenkosten(project)
   const financing = calculateFinancing(project, kaufnebenkosten)
   const rental = calculateRentalIncome(project)

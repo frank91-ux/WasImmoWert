@@ -2,8 +2,9 @@ import type { TaxResult } from '@/calc/types'
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts'
 import { ChartCard } from './ChartCard'
 import { formatEur } from '@/lib/format'
+import { TOOLTIP_STYLE, CHART_COLORS } from './chartTheme'
 
-const COLORS = ['var(--color-primary)', '#16a34a', '#f59e0b']
+const COLORS = [CHART_COLORS.primary, CHART_COLORS.positive, CHART_COLORS.warning]
 
 interface TaxDeductionChartProps {
   tax: TaxResult
@@ -42,14 +43,7 @@ export function TaxDeductionChart({ tax }: TaxDeductionChartProps) {
             </Pie>
             <Tooltip
               formatter={(value) => [formatEur(Number(value)), undefined]}
-              contentStyle={{
-                backgroundColor: 'var(--color-card)',
-                borderColor: 'var(--color-border)',
-                color: 'var(--color-foreground)',
-                borderRadius: '0.5rem',
-                boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
-                fontSize: '0.8125rem',
-              }}
+              contentStyle={TOOLTIP_STYLE}
             />
             <Legend
               iconType="circle"

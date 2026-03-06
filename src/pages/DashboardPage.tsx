@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { useProjectStore } from '@/store/useProjectStore'
@@ -18,6 +18,9 @@ import {
   MapPin, ArrowUpRight, ArrowDownRight,
 } from 'lucide-react'
 import { formatEur, formatPercent } from '@/lib/format'
+import { toast } from 'sonner'
+import { usePlan } from '@/hooks/usePlan'
+import { Sparkles } from 'lucide-react'
 import type { Project } from '@/calc/types'
 
 /* ─── KPI Card ─── */
@@ -82,7 +85,7 @@ function ProjectCard({ project }: { project: Project }) {
       <CardContent className="p-5">
         <div className="flex items-start justify-between gap-3 mb-3">
           <div className="flex items-start gap-2.5 min-w-0">
-            <div className="h-9 w-9 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shrink-0">
+            <div className="h-9 w-9 rounded-lg bg-gradient-to-br from-teal-500 to-emerald-600 flex items-center justify-center shrink-0">
               <MapPin className="h-4 w-4 text-white" />
             </div>
             <div className="min-w-0">
@@ -152,6 +155,7 @@ export function DashboardPage() {
   const { projects, loaded, loadProjects } = useProjectStore()
   const navigate = useNavigate()
 
+  const plan = usePlan()
   const { dashboardView, setDashboardView } = useUiStore()
   const view: ViewMode = dashboardView === 'list' ? 'table' : 'grid'
   const handleViewChange = (v: ViewMode) => setDashboardView(v === 'table' ? 'list' : 'grid')
@@ -162,6 +166,23 @@ export function DashboardPage() {
   useEffect(() => {
     if (!loaded) loadProjects()
   }, [loaded, loadProjects])
+
+  // Onboarding toast on first visit
+  const onboardingShown = useRef(false)
+  useEffect(() => {
+    if (onboardingShown.current) return
+    const key = 'wiw_onboarding_shown'
+    if (!localStorage.getItem(key)) {
+      onboardingShown.current = true
+      localStorage.setItem(key, '1')
+      setTimeout(() => {
+        toast.success('Willkommen bei WasImmoWert!', {
+          description: 'Erstellen Sie Ihr erstes Projekt oder erkunden Sie das Dashboard.',
+          duration: 5000,
+        })
+      }, 800)
+    }
+  }, [])
 
   const handleNewProject = () => {
     navigate('/projects/new')
@@ -297,7 +318,7 @@ export function DashboardPage() {
           <motion.div variants={{ hidden: { opacity: 0, y: 16 }, visible: { opacity: 1, y: 0 } }}>
             <KpiCard
               icon={TrendingUp}
-              iconGradient="bg-gradient-to-br from-indigo-400 to-indigo-600"
+              iconGradient="bg-gradient-to-br from-teal-400 to-teal-600"
               value={formatPercent(aggregateKpis.avgRendite)}
               label="Ø Rendite"
               sublabel="Über alle Objekte"
@@ -319,11 +340,37 @@ export function DashboardPage() {
         </motion.div>
       )}
 
+      {/* Upgrade Nudge for Free Users */}
+      {!plan.isPro && projects.length >= 2 && (
+        <div className="rounded-xl border border-teal-200 dark:border-teal-800 bg-gradient-to-r from-teal-50 to-emerald-50 dark:from-teal-950/30 dark:to-emerald-950/30 p-4 flex items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-teal-500 to-emerald-600 flex items-center justify-center shrink-0">
+              <Sparkles className="h-5 w-5 text-white" />
+            </div>
+            <div>
+              <p className="text-sm font-semibold">
+                {projects.length}/{plan.maxProjects} Projekte genutzt
+              </p>
+              <p className="text-xs text-muted-foreground">
+                Upgrade auf Pro für unbegrenzte Projekte, Steuer-Simulation & KI-Berater
+              </p>
+            </div>
+          </div>
+          <Button
+            size="sm"
+            className="bg-gradient-to-r from-teal-500 to-emerald-600 hover:from-teal-600 hover:to-emerald-700 text-white border-0 shrink-0"
+            onClick={() => navigate('/account')}
+          >
+            Upgrade
+          </Button>
+        </div>
+      )}
+
       {/* Empty State */}
       {projects.length === 0 ? (
         <Card className="border-dashed border-2">
           <CardContent className="flex flex-col items-center justify-center py-16">
-            <div className="h-16 w-16 rounded-2xl bg-gradient-to-br from-indigo-100 to-purple-100 dark:from-indigo-900/30 dark:to-purple-900/30 flex items-center justify-center mb-5">
+            <div className="h-16 w-16 rounded-2xl bg-gradient-to-br from-teal-100 to-emerald-100 dark:from-teal-900/30 dark:to-emerald-900/30 flex items-center justify-center mb-5">
               <Building2 className="h-8 w-8 text-primary" />
             </div>
             <h3 className="text-xl font-semibold mb-2">Noch keine Projekte</h3>
@@ -331,7 +378,7 @@ export function DashboardPage() {
               Erstellen Sie ein neues Projekt, um die Rentabilität einer Immobilie zu berechnen.
               Geben Sie einfach Kaufpreis, Adresse und Quadratmeter ein.
             </p>
-            <Button onClick={handleNewProject} className="bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white border-0">
+            <Button onClick={handleNewProject} className="bg-gradient-to-r from-teal-500 to-emerald-600 hover:from-teal-600 hover:to-emerald-700 text-white border-0">
               <Plus className="h-4 w-4" />
               Erstes Projekt anlegen
             </Button>
@@ -345,7 +392,7 @@ export function DashboardPage() {
               <h3 className="text-lg font-semibold">Immobilien Portfolio</h3>
               <p className="text-sm text-muted-foreground">Übersicht aller Objekte im Portfolio</p>
             </div>
-            <Button onClick={handleNewProject} className="bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white border-0">
+            <Button onClick={handleNewProject} className="bg-gradient-to-r from-teal-500 to-emerald-600 hover:from-teal-600 hover:to-emerald-700 text-white border-0">
               <Plus className="h-4 w-4" />
               Objekt hinzufügen
             </Button>

@@ -2,6 +2,7 @@ import type { InvestmentComparisonResult } from '@/calc/types'
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card'
 import { formatEur } from '@/lib/format'
+import { TOOLTIP_STYLE, AXIS_TICK, GRID_STYLE, CHART_COLORS } from './chartTheme'
 
 interface InvestmentComparisonChartProps {
   comparison: InvestmentComparisonResult
@@ -36,26 +37,19 @@ export function InvestmentComparisonChart({
         <div className="h-72">
           <ResponsiveContainer width="100%" height="100%">
             <LineChart data={data}>
-              <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" />
+              <CartesianGrid {...GRID_STYLE} />
               <XAxis
                 dataKey="year"
-                tick={{ fontSize: 10, fill: 'var(--color-muted-foreground)' }}
+                tick={AXIS_TICK}
                 interval={4}
               />
               <YAxis
-                tick={{ fontSize: 10, fill: 'var(--color-muted-foreground)' }}
+                tick={AXIS_TICK}
                 tickFormatter={(v) => `${(v / 1000).toFixed(0)}k`}
               />
               <Tooltip
                 formatter={(value, name) => [formatEur(Number(value)), name]}
-                contentStyle={{
-                  backgroundColor: 'var(--color-card)',
-                  borderColor: 'var(--color-border)',
-                  color: 'var(--color-foreground)',
-                  borderRadius: '0.5rem',
-                  boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
-                  fontSize: '0.8125rem',
-                }}
+                contentStyle={TOOLTIP_STYLE}
               />
               <Legend
                 wrapperStyle={{ fontSize: '0.75rem' }}
@@ -63,14 +57,14 @@ export function InvestmentComparisonChart({
               <Line
                 type="monotone"
                 dataKey="Immobilie"
-                stroke="var(--color-primary)"
+                stroke={CHART_COLORS.primary}
                 strokeWidth={2}
                 dot={false}
               />
               <Line
                 type="monotone"
                 dataKey={etfLabel}
-                stroke="#16a34a"
+                stroke={CHART_COLORS.positive}
                 strokeWidth={2}
                 dot={false}
               />

@@ -5,11 +5,19 @@ import { useCalculation } from '@/hooks/useCalculation'
 import { calculateRentabilitaet } from '@/calc/rentabilitaet'
 import { RentabilitaetBadge } from '@/components/results/RentabilitaetBadge'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
+import { ChartCard } from '@/components/charts/ChartCard'
 import { InvestmentComparisonChart } from '@/components/charts/InvestmentComparisonChart'
 import { formatEur, formatPercent, formatFactor } from '@/lib/format'
+import { TOOLTIP_STYLE, AXIS_TICK, GRID_STYLE, CHART_COLORS, ANIMATION_DURATION } from '@/components/charts/chartTheme'
+import {
+  LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, ReferenceLine,
+} from 'recharts'
 
 import type { Project, CalculationResult, KpiResult } from '@/calc/types'
 import { calculateAll } from '@/calc'
+
+// Colors for up to 4 projects
+const PROJECT_COLORS = [CHART_COLORS.primary, CHART_COLORS.positive, CHART_COLORS.palette[4], CHART_COLORS.palette[6]]
 
 const KPI_LABELS: Record<string, string> = {
   cashflow: 'Monatl. Cashflow',
@@ -94,6 +102,126 @@ function Row({ label, value, className, bold }: { label: string; value: string; 
   )
 }
 
+/* ─── Overlaid Charts ─── */
+function OverlaidCharts({ projects }: { projects: Project[] }) {
+  const maxYears = 30
+
+  const { cashflowData, ekData } = useMemo(() => {
+    const results = projects.map((p) => ({ project: p, result: calculateAll(p) }))
+    const maxLen = Math.min(maxYears, Math.max(...results.map((r) => r.result.projection.length)))
+
+    const cfData: Record<string, string | number>[] = []
+    const eData: Record<string, string | number>[] = []
+
+    for (let i = 0; i < maxLen; i++) {
+      const cfPoint: Record<string, string | number> = { label: `Jahr ${i + 1}` }
+      const ePoint: Record<string, string | number> = { label: `Jahr ${i + 1}` }
+      for (let j = 0; j < results.length; j++) {
+        const y = results[j].result.projection[i]
+        if (y) {
+          cfPoint[`cf_${j}`] = Math.round(y.cashflowNachSteuer / 12)
+          ePoint[`ek_${j}`] = Math.round(y.eigenkapitalImObjekt)
+        }
+      }
+      cfData.push(cfPoint)
+      eData.push(ePoint)
+    }
+
+    return { cashflowData: cfData, ekData: eData }
+  }, [projects])
+
+  const xInterval = cashflowData.length <= 5 ? 0 : Math.max(1, Math.floor(cashflowData.length / 8))
+
+  return (
+    <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
+      {/* Cashflow Vergleich */}
+      <ChartCard title="Cashflow-Vergleich" subtitle="Monatl. Netto-Cashflow über Zeit">
+        <div className="h-64">
+          <ResponsiveContainer width="100%" height="100%">
+            <LineChart data={cashflowData}>
+              <CartesianGrid {...GRID_STYLE} />
+              <XAxis dataKey="label" tick={{ ...AXIS_TICK, fontSize: 10 }} interval={xInterval} />
+              <YAxis tick={{ ...AXIS_TICK, fontSize: 10 }} tickFormatter={(v) => `${Math.round(v)}`} width={50} />
+              <Tooltip
+                formatter={(value: number, name: string) => {
+                  const idx = parseInt(name.replace('cf_', ''))
+                  return [formatEur(value) + '/Mon', projects[idx]?.name ?? name]
+                }}
+                contentStyle={TOOLTIP_STYLE}
+              />
+              <Legend
+                iconType="line" iconSize={8}
+                wrapperStyle={{ fontSize: '0.7rem' }}
+                payload={projects.map((p, i) => ({
+                  value: p.name.length > 15 ? p.name.slice(0, 15) + '…' : p.name,
+                  type: 'line' as const,
+                  color: PROJECT_COLORS[i % PROJECT_COLORS.length],
+                  id: `cf_${i}`,
+                }))}
+              />
+              <ReferenceLine y={0} stroke={CHART_COLORS.muted} strokeDasharray="3 3" strokeOpacity={0.5} />
+              {projects.map((_, i) => (
+                <Line
+                  key={`cf_${i}`}
+                  type="monotone"
+                  dataKey={`cf_${i}`}
+                  stroke={PROJECT_COLORS[i % PROJECT_COLORS.length]}
+                  strokeWidth={2}
+                  dot={{ r: 1.5, strokeWidth: 0, fill: PROJECT_COLORS[i % PROJECT_COLORS.length] }}
+                  activeDot={{ r: 4 }}
+                  animationDuration={ANIMATION_DURATION}
+                />
+              ))}
+            </LineChart>
+          </ResponsiveContainer>
+        </div>
+      </ChartCard>
+
+      {/* Eigenkapital Vergleich */}
+      <ChartCard title="Eigenkapital-Vergleich" subtitle="Eigenkapital im Objekt über Zeit">
+        <div className="h-64">
+          <ResponsiveContainer width="100%" height="100%">
+            <LineChart data={ekData}>
+              <CartesianGrid {...GRID_STYLE} />
+              <XAxis dataKey="label" tick={{ ...AXIS_TICK, fontSize: 10 }} interval={xInterval} />
+              <YAxis tick={{ ...AXIS_TICK, fontSize: 10 }} tickFormatter={(v) => `${(v / 1000).toFixed(0)}k`} />
+              <Tooltip
+                formatter={(value: number, name: string) => {
+                  const idx = parseInt(name.replace('ek_', ''))
+                  return [formatEur(value), projects[idx]?.name ?? name]
+                }}
+                contentStyle={TOOLTIP_STYLE}
+              />
+              <Legend
+                iconType="line" iconSize={8}
+                wrapperStyle={{ fontSize: '0.7rem' }}
+                payload={projects.map((p, i) => ({
+                  value: p.name.length > 15 ? p.name.slice(0, 15) + '…' : p.name,
+                  type: 'line' as const,
+                  color: PROJECT_COLORS[i % PROJECT_COLORS.length],
+                  id: `ek_${i}`,
+                }))}
+              />
+              {projects.map((_, i) => (
+                <Line
+                  key={`ek_${i}`}
+                  type="monotone"
+                  dataKey={`ek_${i}`}
+                  stroke={PROJECT_COLORS[i % PROJECT_COLORS.length]}
+                  strokeWidth={2}
+                  dot={{ r: 1.5, strokeWidth: 0, fill: PROJECT_COLORS[i % PROJECT_COLORS.length] }}
+                  activeDot={{ r: 4 }}
+                  animationDuration={ANIMATION_DURATION}
+                />
+              ))}
+            </LineChart>
+          </ResponsiveContainer>
+        </div>
+      </ChartCard>
+    </div>
+  )
+}
+
 export function ProjectComparisonView({ initialSelectedIds }: { initialSelectedIds?: string[] }) {
   const { projects } = useProjectStore()
   const { primaryKpi } = useUiStore()
@@ -162,6 +290,9 @@ export function ProjectComparisonView({ initialSelectedIds }: { initialSelectedI
               </div>
             </CardContent>
           </Card>
+
+          {/* Overlaid Charts */}
+          <OverlaidCharts projects={selectedProjects} />
 
           {selectedProjects.map((p) => {
             const result = calculateAll(p)

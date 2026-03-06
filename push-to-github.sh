@@ -29,18 +29,31 @@ if git diff --cached --quiet 2>/dev/null; then
   echo "✅ Keine neuen Änderungen zum Committen."
 else
   echo "💾 Commit erstellen..."
-  git commit -m "feat: WasImmoWert SaaS-Dashboard für Immobilienbewertung
+  git commit -m "feat: WasImmoWert SaaS-Transformation – Landing Page, Pricing, DSGVO, KI-Berater
 
-Komplette Webapp mit React 19, TypeScript, Vite 6 und Tailwind CSS 4.
+Komplette SaaS-Webapp mit React 19, TypeScript, Vite 6 und Tailwind CSS 4.
 
-Features:
+Neue Features:
+- Attraktive Landing Page mit Schnellbewertung und Customer Journey
+- Pricing-Section: Free / Pro €9,99 / Lifetime €99,99
+- usePlan Hook für Feature-Gating nach Abo-Stufe
+- Bundesland-Marktdaten (16 Bundesländer mit Durchschnittswerten)
+- Chart-Visibility-Filter: Eigennutzung blendet irrelevante Miet-Charts aus
+- Sensitivitätsanalyse filtert Miet-Parameter bei Eigennutzung
+- DSGVO-konformer Cookie-Banner mit Einstellungen
+- Datenmanagement-Dialog (Export + Löschung)
+- 4 Legal Pages: Datenschutz, Impressum, AGB, Cookie-Richtlinie
+- 4 Help Pages: Kontakt, Support, Feedback, Presse
+- KI-Berater Redesign mit Pro-Only-Gate und Teal-Design
+- Sidebar mit Plan-Badge und neuen Nav-Items
+- Stripe-Placeholder für spätere Integration
+- Supabase-Schema erweitert (Subscription, Consent, data_requests)
+
+Bestehende Features:
 - Figma-basiertes Dashboard-Design (Dark Indigo Sidebar, Gradient KPIs)
-- Zod-Validierung + DOMPurify für Input-Sicherheit
-- decimal.js für präzise Finanzberechnungen (Annuität, Steuer, KPIs)
-- Framer Motion Animationen + Sonner Toast-Benachrichtigungen
-- Supabase-Integration (Auth, OAuth, PostgreSQL mit RLS)
+- decimal.js für präzise Finanzberechnungen
 - Deutsche Steuerberechnung (§32a EStG, Soli-Gleitzone, AfA)
-- Kaufnebenkosten, Cashflow, Tilgungsplan, Sensitivitätsanalyse
+- Supabase-Auth (Email, OAuth, Magic Link)
 - Zustand State Management mit localStorage + Cloud-Sync
 
 Co-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>"

@@ -1,4 +1,5 @@
-import type { Project, CalculationResult } from '@/calc/types'
+import type { Project, CalculationResult, ScenarioAdjustment } from '@/calc/types'
+import type { EtvProtokoll } from '@/store/useEtvStore'
 
 export interface InlineCalculationEntry {
   label: string
@@ -12,6 +13,7 @@ export interface AiResponse {
     title: string
     entries: InlineCalculationEntry[]
   }
+  scenarioAdjustments?: ScenarioAdjustment[]
 }
 
 // Whitelist of parameters the AI may change
@@ -23,7 +25,44 @@ const ALLOWED_PARAMS = new Set([
   'verwaltungProEinheit', 'nichtUmlegbareNebenkosten',
 ])
 
-function buildSystemPrompt(project: Project, result: CalculationResult): string {
+function buildEtvContext(protokolle: EtvProtokoll[]): string {
+  if (protokolle.length === 0) return ''
+
+  const parts = protokolle.map((p) => {
+    const lines: string[] = []
+    lines.push(`--- Protokoll: ${p.dateiName} (${p.datum}) ---`)
+    lines.push(`Objekt: ${p.objekt}`)
+    lines.push(`Verwaltung: ${p.verwaltung}`)
+    if (p.zusammenfassung) lines.push(`Zusammenfassung: ${p.zusammenfassung}`)
+
+    if (p.warnungen.length > 0) {
+      lines.push(`Warnhinweise: ${p.warnungen.join('; ')}`)
+    }
+
+    for (const b of p.beschluesse) {
+      const stimmen = b.jaStimmen != null ? ` (JA:${b.jaStimmen}/NEIN:${b.neinStimmen}/Enth:${b.enthaltungen})` : ''
+      const kosten = b.kostenRelevant && b.betrag != null ? ` [${b.betrag} EUR]` : ''
+      lines.push(`${b.topNummer} ${b.titel}: ${b.ergebnis}${stimmen}${kosten} — ${b.antrag}`)
+    }
+
+    if (p.wirtschaftsplan) {
+      const wp = p.wirtschaftsplan
+      lines.push(`Wirtschaftsplan ${wp.jahr}: Ausgaben ${wp.ausgabenGesamt} EUR, Rücklage ${wp.ruecklageGesamt} EUR${wp.hausgeldMonatlich != null ? `, Hausgeld ${wp.hausgeldMonatlich} EUR/Mon` : ''}`)
+      for (const k of wp.kostenPositionen) {
+        lines.push(`  - ${k.bezeichnung}: ${k.gesamtkosten} EUR (Anteil: ${k.anteilEigentümer ?? '?'} EUR, ${k.verteilschluessel})`)
+      }
+    }
+
+    return lines.join('\n')
+  })
+
+  return `\n\nEIGENTÜMERVERSAMMLUNGS-PROTOKOLLE (ETV):
+Der Nutzer hat ${protokolle.length} ETV-Protokoll(e) hochgeladen. Du kannst auf diese Daten verweisen, Risiken bewerten, Kosten aus Wirtschaftsplänen analysieren und den Nutzer beraten.
+
+${parts.join('\n\n')}`
+}
+
+function buildSystemPrompt(project: Project, result: CalculationResult, etvProtokolle?: EtvProtokoll[]): string {
   const projektDaten = {
     name: project.name,
     nutzungsart: project.nutzungsart,
@@ -102,12 +141,17 @@ function buildSystemPrompt(project: Project, result: CalculationResult): string 
 
   return `Du bist ein KI-Berater für Immobilien-Investments in der App "WasImmoWert".
 Du analysierst die vorliegenden Projektdaten und berechneten Kennzahlen und kannst eigene Berechnungen durchführen.
+Du kannst auch komplexe Mehrjahres-Szenarien simulieren, die über die normalen Regler hinausgehen.
 
 STRIKTE REGELN:
 - Antworte IMMER auf Deutsch
-- Halte Antworten prägnant aber informativ
+- Halte Antworten prägnant aber informativ (max. 200 Wörter pro Antwort)
 - Formatiere Geldbeträge mit Punkt als Tausendertrennzeichen (z.B. 280.000 EUR)
 - Du darfst KEINE externen Marktdaten oder Vergleichswerte nutzen
+- WICHTIG: Dein "message"-Feld muss normaler Fließtext auf Deutsch sein. KEIN Code, KEIN JSON, KEINE technischen Variablennamen
+- Nutze **fett** für wichtige Zahlen und Ergebnisse
+- Nutze Aufzählungen mit "- " für Listen
+- Schreibe wie ein freundlicher Finanzberater, nicht wie ein Programmierer
 
 BERECHNUNGSFORMELN (nutze diese für eigene Berechnungen):
 - Annuität (monatlich) = Darlehensbetrag × (Zinssatz + Tilgung) / 100 / 12
@@ -150,18 +194,56 @@ ANTWORTFORMAT — antworte IMMER als valides JSON:
       { "label": "Zusätzliche Kreditrate", "value": "250 EUR/Mon" },
       { "label": "Neuer Cashflow", "value": "-150 EUR/Mon" }
     ]
-  }
+  },
+  "scenarioAdjustments": [
+    {
+      "label": "Sonderumlage ab Jahr 4",
+      "type": "kredit",
+      "fromYear": 4,
+      "toYear": 30,
+      "kreditSumme": 15000,
+      "kreditZins": 4.5,
+      "kreditTilgung": 3
+    }
+  ]
 }
 
 WANN WELCHES FELD NUTZEN:
 - "parameterChanges": NUR wenn der User explizit einen Parameter ändern will (z.B. "setze Kaufpreis auf 300.000")
-- "inlineCalculation": Für hypothetische Berechnungen und Was-wäre-wenn-Szenarien (z.B. "Was kostet eine Renovierung für 50k?", "Was passiert bei 4% Zinsen nach Zinsbindung?"). Zeige die Rechenschritte als Tabelle. Ändere dabei KEINE Parameter.
-- Beide Felder sind optional. Nutze "inlineCalculation" wenn du eine Berechnung durchführst, ohne die Projekt-Parameter zu ändern.
+- "inlineCalculation": Für hypothetische Berechnungen und Was-wäre-wenn-Szenarien. Zeige die Rechenschritte als Tabelle. Ändere dabei KEINE Parameter.
+- "scenarioAdjustments": Für komplexe Mehrjahres-Szenarien die NICHT über einfache Parameteränderungen abgebildet werden können. Die Ergebnisse werden live in den Cashflow- und Wertentwicklungs-Charts angezeigt.
+- Alle Felder sind optional. Kombiniere "message" + "scenarioAdjustments" + "inlineCalculation" wenn sinnvoll.
+
+SZENARIO-TYPEN für scenarioAdjustments:
+1. "expense" — Zusätzliche jährliche Kosten, NICHT steuerlich absetzbar (z.B. Sonderumlage, Reparatur)
+   Pflichtfelder: label, type, fromYear, toYear, annualAmount (EUR/Jahr, IMMER positiv!)
+2. "income" — Änderung der jährlichen Mieteinnahmen. POSITIVER Wert = mehr Einnahmen, NEGATIVER Wert = Mietausfall/Leerstand!
+   Pflichtfelder: label, type, fromYear, toYear, annualAmount (EUR/Jahr, NEGATIV bei Mietausfall!)
+   WICHTIG: Bei komplettem Mietausfall = annualAmount: -(Nettomieteinnahmen pro Jahr). Steuereffekte werden automatisch berechnet.
+3. "kredit" — Zusätzlicher Kredit (z.B. Modernisierung). Zinsen steuerlich absetzbar, Tilgung nicht.
+   Pflichtfelder: label, type, fromYear, toYear, kreditSumme, kreditZins, kreditTilgung
+
+KRITISCHE REGELN:
+- Mietausfall/Leerstand: IMMER type="income" mit NEGATIVEM annualAmount! Berechne: annualAmount = -(Nettomieteinnahmen pro Jahr aus Projektdaten)
+- Erstelle NUR EIN Szenario pro Ereignis. NIEMALS doppelte oder widersprüchliche Szenarien!
+- Mieterhöhung: type="income" mit POSITIVEM annualAmount
+- Der Steuersatz des Users (${project.persoenlicherSteuersatz}%) wird automatisch berücksichtigt
+
+BEISPIELE:
+- "Leerstand/Mietausfall im Jahr 3": EIN scenarioAdjustment: type="income", fromYear=3, toYear=3, annualAmount=-(Nettomieteinnahmen, berechne exakt aus Projektdaten)
+- "Nebenkosten verdoppeln ab Jahr 3": type="expense", fromYear=3, toYear=30, annualAmount=(aktuelle jährliche Nebenkosten)
+- "Sonderumlage 15k mit Kredit": type="kredit", fromYear=4, kreditSumme=15000. Frage nach Zinssatz/Tilgung wenn nicht angegeben!
+- "Mieterhöhung 200 EUR/Monat ab Jahr 5": type="income", fromYear=5, toYear=30, annualAmount=2400
+- "Mieterhöhung 10% ab Jahr 4": type="income", fromYear=4, toYear=30, annualAmount=(Nettomieteinnahmen × 0.10)
+- "Modernisierung 500k + Mieterhöhung 10%": ZWEI Szenarien: ein "kredit" + ein "income"
+
+RÜCKFRAGEN-REGEL:
+Wenn der User ein Szenario anfragt aber wichtige Daten fehlen (z.B. Kreditkonditionen, genaue Beträge, Zeitraum), stelle ZUERST eine Rückfrage im "message"-Feld. Gib KEIN scenarioAdjustments-Array zurück bis alle nötigen Daten vorhanden sind.
 
 ERLAUBTE PARAMETER für parameterChanges:
 ${Array.from(ALLOWED_PARAMS).join(', ')}
 
-Wenn der User nach einer Modernisierung fragt, führe eine inlineCalculation durch und zeige die finanziellen Auswirkungen. Ändere die Parameter nur wenn er es explizit wünscht.`
+Wenn der User nach einer Modernisierung fragt, prüfe ob es über scenarioAdjustments (Kredit + Zeitraum) oder parameterChanges (einfache Änderung) besser abbildbar ist. Bevorzuge scenarioAdjustments für zeitlich begrenzte oder zukunftsbezogene Szenarien.${buildEtvContext(etvProtokolle ?? [])}`
 }
 
 function sanitizeParameterChanges(changes: Record<string, unknown>): Record<string, number> | undefined {
@@ -199,6 +281,48 @@ function sanitizeInlineCalculation(
   return entries.length > 0 ? { title: obj.title, entries } : undefined
 }
 
+function sanitizeScenarioAdjustments(
+  adjustments: unknown,
+): ScenarioAdjustment[] | undefined {
+  if (!Array.isArray(adjustments)) return undefined
+
+  const sanitized: ScenarioAdjustment[] = []
+  for (const raw of adjustments) {
+    if (!raw || typeof raw !== 'object') continue
+    const a = raw as Record<string, unknown>
+
+    const type = a.type as string
+    if (!['expense', 'income', 'kredit'].includes(type)) continue
+
+    const fromYear = typeof a.fromYear === 'number' ? Math.max(1, Math.min(30, Math.round(a.fromYear))) : null
+    if (fromYear === null) continue
+
+    const toYear = typeof a.toYear === 'number' ? Math.max(fromYear, Math.min(30, Math.round(a.toYear))) : 30
+
+    const adj: ScenarioAdjustment = {
+      id: crypto.randomUUID(),
+      label: typeof a.label === 'string' ? a.label : `Szenario ab Jahr ${fromYear}`,
+      type: type as 'expense' | 'income' | 'kredit',
+      fromYear,
+      toYear,
+    }
+
+    if (type === 'expense' || type === 'income') {
+      adj.annualAmount = typeof a.annualAmount === 'number' && isFinite(a.annualAmount) ? a.annualAmount : 0
+    }
+
+    if (type === 'kredit') {
+      adj.kreditSumme = typeof a.kreditSumme === 'number' && isFinite(a.kreditSumme) ? a.kreditSumme : 0
+      adj.kreditZins = typeof a.kreditZins === 'number' && isFinite(a.kreditZins) ? a.kreditZins : 3
+      adj.kreditTilgung = typeof a.kreditTilgung === 'number' && isFinite(a.kreditTilgung) ? a.kreditTilgung : 2
+    }
+
+    sanitized.push(adj)
+  }
+
+  return sanitized.length > 0 ? sanitized : undefined
+}
+
 /**
  * Ensure messages alternate between user and assistant roles.
  * Consecutive same-role messages are merged (required by Anthropic API).
@@ -225,8 +349,9 @@ export async function sendChatMessage(
   project: Project,
   result: CalculationResult,
   messages: { role: 'user' | 'assistant'; content: string }[],
+  etvProtokolle?: EtvProtokoll[],
 ): Promise<AiResponse> {
-  const systemPrompt = buildSystemPrompt(project, result)
+  const systemPrompt = buildSystemPrompt(project, result, etvProtokolle)
   const sanitizedMessages = ensureAlternatingRoles(messages)
 
   let response: Response
@@ -278,20 +403,48 @@ export async function sendChatMessage(
 
   // Try to parse JSON response
   try {
-    // Handle potential markdown code blocks
-    const jsonStr = text.replace(/^```json?\s*\n?/i, '').replace(/\n?```\s*$/i, '').trim()
+    // Handle potential markdown code blocks and whitespace
+    let jsonStr = text.trim()
+    // Remove markdown code fences
+    jsonStr = jsonStr.replace(/^```(?:json)?\s*\n?/i, '').replace(/\n?\s*```\s*$/i, '').trim()
+    // Sometimes AI wraps in extra text before/after JSON
+    const jsonMatch = jsonStr.match(/\{[\s\S]*\}/)
+    if (jsonMatch) {
+      jsonStr = jsonMatch[0]
+    }
     const parsed = JSON.parse(jsonStr)
+    // Decode escaped newlines/tabs that the AI may produce as literal sequences
+    const rawMsg = typeof parsed.message === 'string' ? parsed.message : text
+    const cleanMsg = rawMsg.replace(/\\n/g, '\n').replace(/\\t/g, '\t').replace(/\\r/g, '')
     return {
-      message: typeof parsed.message === 'string' ? parsed.message : text,
+      message: cleanMsg,
       parameterChanges: parsed.parameterChanges
         ? sanitizeParameterChanges(parsed.parameterChanges)
         : undefined,
       inlineCalculation: parsed.inlineCalculation
         ? sanitizeInlineCalculation(parsed.inlineCalculation)
         : undefined,
+      scenarioAdjustments: parsed.scenarioAdjustments
+        ? sanitizeScenarioAdjustments(parsed.scenarioAdjustments)
+        : undefined,
     }
   } catch {
-    // If AI didn't return valid JSON, treat entire text as message
-    return { message: text }
+    // If AI didn't return valid JSON, clean up the text and treat as message
+    // Remove any JSON artifacts that leaked into the text
+    let cleanText = text
+      .replace(/^```(?:json)?\s*\n?/gi, '')
+      .replace(/\n?\s*```\s*$/gi, '')
+      .replace(/^\s*\{\s*"message"\s*:\s*"/i, '')
+      .replace(/"\s*\}\s*$/i, '')
+      .trim()
+    // If still looks like raw JSON, try to extract the message field
+    if (cleanText.startsWith('{') && cleanText.includes('"message"')) {
+      try {
+        const obj = JSON.parse(cleanText)
+        if (obj.message) cleanText = obj.message
+      } catch { /* keep cleanText as is */ }
+    }
+    const finalMsg = (cleanText || text).replace(/\\n/g, '\n').replace(/\\t/g, '\t').replace(/\\r/g, '')
+    return { message: finalMsg }
   }
 }

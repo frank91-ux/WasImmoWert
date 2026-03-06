@@ -8,35 +8,75 @@ interface KpiGaugeProps {
 }
 
 export function KpiGauge({ value, thresholds, direction, min, max, unit = '' }: KpiGaugeProps) {
-  const range = max - min
-  if (range <= 0) return null
-
-  // Clamp value to range
-  const clamped = Math.max(min, Math.min(max, value))
-  const position = ((clamped - min) / range) * 100
-
-  // Calculate threshold positions
-  const { good, medium } = thresholds
-  const goodPos = ((good - min) / range) * 100
-  const mediumPos = ((medium - min) / range) * 100
-
-  // Build gradient based on direction
-  // higher-better: left=bad(red), middle=medium(amber), right=good(green)
-  // lower-better: left=good(green), middle=medium(amber), right=bad(red)
   const isHigherBetter = direction === 'higher-better'
 
-  // For higher-better: red → amber → green (left to right)
-  // Thresholds: medium < good (e.g. medium=3, good=5)
-  // For lower-better: green → amber → red (left to right)
-  // Thresholds: good < medium (e.g. good=20, medium=25)
+  // Dynamic scaling: expand min/max if value is outside range
+  const dynamicMin = Math.min(min, value - Math.abs(value) * 0.1)
+  const dynamicMax = Math.max(max, value + Math.abs(value) * 0.1)
+  const range = dynamicMax - dynamicMin
+  if (range <= 0) return null
+
+  const position = ((Math.max(dynamicMin, Math.min(dynamicMax, value)) - dynamicMin) / range) * 100
+
+  // Calculate threshold positions on the dynamic scale
+  const { good, medium } = thresholds
+  const goodPos = Math.max(0, Math.min(100, ((good - dynamicMin) / range) * 100))
+  const mediumPos = Math.max(0, Math.min(100, ((medium - dynamicMin) / range) * 100))
+
   const leftPos = isHigherBetter ? Math.min(mediumPos, goodPos) : Math.min(goodPos, mediumPos)
   const rightPos = isHigherBetter ? Math.max(mediumPos, goodPos) : Math.max(goodPos, mediumPos)
+
+  // Determine value color based on zone
+  const getValueColor = () => {
+    if (isHigherBetter) {
+      if (value >= good) return 'text-green-600 dark:text-green-400'
+      if (value >= medium) return 'text-amber-600 dark:text-amber-400'
+      return 'text-red-600 dark:text-red-400'
+    } else {
+      if (value <= good) return 'text-green-600 dark:text-green-400'
+      if (value <= medium) return 'text-amber-600 dark:text-amber-400'
+      return 'text-red-600 dark:text-red-400'
+    }
+  }
 
   // Format threshold labels
   const fmt = (v: number) => Number.isInteger(v) ? `${v}` : v.toFixed(1)
 
+  // Determine left/right label values
+  const leftLabel = isHigherBetter ? fmt(medium) : fmt(good)
+  const rightLabel = isHigherBetter ? fmt(good) : fmt(medium)
+
+  // Prevent label overlap with marker
+  const leftLabelStyle = Math.abs(leftPos - position) < 12 ? { opacity: 0.4 } : {}
+  const rightLabelStyle = Math.abs(rightPos - position) < 12 ? { opacity: 0.4 } : {}
+
   return (
-    <div className="w-full mt-2 group">
+    <div className="w-full mt-2">
+      {/* Value labels at zone boundaries - always visible */}
+      <div className="relative h-4 mb-0.5">
+        {/* Left boundary label */}
+        <div
+          className="absolute -translate-x-1/2 top-0 text-[10px] text-red-500/80 tabular-nums whitespace-nowrap font-medium"
+          style={{ left: `${leftPos}%`, ...leftLabelStyle }}
+        >
+          {leftLabel}
+        </div>
+        {/* Right boundary label */}
+        <div
+          className="absolute -translate-x-1/2 top-0 text-[10px] text-green-600/80 tabular-nums whitespace-nowrap font-medium"
+          style={{ left: `${rightPos}%`, ...rightLabelStyle }}
+        >
+          {rightLabel}
+        </div>
+        {/* Current value label */}
+        <div
+          className={`absolute -translate-x-1/2 top-0 text-[10px] tabular-nums whitespace-nowrap font-bold ${getValueColor()}`}
+          style={{ left: `${position}%` }}
+        >
+          {fmt(value)}{unit ? ` ${unit}` : ''}
+        </div>
+      </div>
+
       <div className="relative h-2 rounded-full overflow-hidden bg-muted">
         {/* Color zones */}
         {isHigherBetter ? (
@@ -76,22 +116,6 @@ export function KpiGauge({ value, thresholds, direction, min, max, unit = '' }: 
           className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-3 h-3 rounded-full border-2 border-foreground bg-background shadow-sm z-10"
           style={{ left: `${position}%` }}
         />
-      </div>
-
-      {/* Hover labels at zone boundaries */}
-      <div className="relative h-0 opacity-0 group-hover:opacity-100 group-hover:h-5 transition-all duration-200 overflow-hidden">
-        <div
-          className="absolute -translate-x-1/2 top-0.5 text-[10px] text-muted-foreground tabular-nums whitespace-nowrap"
-          style={{ left: `${leftPos}%` }}
-        >
-          {isHigherBetter ? fmt(medium) : fmt(good)}
-        </div>
-        <div
-          className="absolute -translate-x-1/2 top-0.5 text-[10px] text-muted-foreground tabular-nums whitespace-nowrap"
-          style={{ left: `${rightPos}%` }}
-        >
-          {isHigherBetter ? fmt(good) : fmt(medium)}
-        </div>
       </div>
     </div>
   )

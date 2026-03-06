@@ -1,4 +1,5 @@
 import { create } from 'zustand'
+import type { ScenarioAdjustment } from '@/calc/types'
 
 export interface InlineCalculation {
   title: string
@@ -11,6 +12,7 @@ export interface ChatMessage {
   content: string
   parameterChanges?: Record<string, number | string>
   inlineCalculation?: InlineCalculation
+  scenarioAdjustments?: ScenarioAdjustment[]
   timestamp: number
 }
 

@@ -31,12 +31,18 @@ export function KaufnebenkostenBreakdown({ result, kaufpreis }: KaufnebenkostenB
             <tr>
               <td className="py-1.5">
                 <ExplanationTooltip term="notarUndGrundbuch">Notar & Grundbuch</ExplanationTooltip>
+                <span className="text-muted-foreground ml-1">
+                  ({kaufpreis > 0 ? ((result.notarkosten / kaufpreis) * 100).toFixed(1) : '1,5'} % — typ. 1,5–2,0 %)
+                </span>
               </td>
               <td className="py-1.5 text-right tabular-nums">{formatEur(result.notarkosten)}</td>
             </tr>
             <tr>
               <td className="py-1.5">
                 <ExplanationTooltip term="maklerProvision">Makler</ExplanationTooltip>
+                <span className="text-muted-foreground ml-1">
+                  ({kaufpreis > 0 ? ((result.maklerkosten / kaufpreis) * 100).toFixed(2) : '0'} % — typ. 3,57–7,14 %)
+                </span>
               </td>
               <td className="py-1.5 text-right tabular-nums">{formatEur(result.maklerkosten)}</td>
             </tr>

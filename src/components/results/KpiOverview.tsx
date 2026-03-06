@@ -104,7 +104,7 @@ export function KpiOverview({ result, nutzungsart, eigenkapital, gesamtkosten, p
   // Marktvergleich
   const eigenPreisProQm = project && project.wohnflaeche > 0 ? project.kaufpreis / project.wohnflaeche : 0
   const eigenMieteProQm = project && project.wohnflaeche > 0 ? project.monatsmieteKalt / project.wohnflaeche : 0
-  const markt = berechneMarktvergleich(eigenPreisProQm, eigenMieteProQm)
+  const markt = berechneMarktvergleich(eigenPreisProQm, eigenMieteProQm, project?.lat, project?.lng)
 
   const ekIsZero = eigenkapital !== undefined && eigenkapital === 0
   const ekIsGesamtsumme = eigenkapital !== undefined && gesamtkosten !== undefined && gesamtkosten > 0 && eigenkapital >= gesamtkosten

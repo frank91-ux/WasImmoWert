@@ -5,7 +5,7 @@ import {
 } from 'recharts'
 import { ChartCard } from './ChartCard'
 import { formatEur } from '@/lib/format'
-import { TOOLTIP_STYLE, AXIS_TICK, GRID_STYLE, LEGEND_STYLE, BAR_RADIUS, ANIMATION_DURATION, ZINSBINDUNG_LEGEND_ENTRY } from './chartTheme'
+import { TOOLTIP_STYLE, AXIS_TICK, GRID_STYLE, LEGEND_STYLE, BAR_RADIUS, ANIMATION_DURATION, ZINSBINDUNG_LEGEND_ENTRY, CHART_COLORS } from './chartTheme'
 
 interface CashflowChartProps {
   result: CalculationResult
@@ -15,12 +15,12 @@ interface CashflowChartProps {
 }
 
 const COLORS = {
-  mieteinnahmen: '#16a34a',
-  nebenkosten: '#f97316',
-  zinsen: '#ef4444',
-  tilgung: 'var(--color-primary)',
-  steuer: '#8b5cf6',
-  netto: '#0ea5e9',
+  mieteinnahmen: CHART_COLORS.positive,
+  nebenkosten: CHART_COLORS.warning,
+  zinsen: CHART_COLORS.negative,
+  tilgung: CHART_COLORS.primary,
+  steuer: CHART_COLORS.palette[5],
+  netto: CHART_COLORS.palette[7],
 }
 
 const LABEL_MAP: Record<string, string> = {
@@ -101,18 +101,18 @@ export function CashflowChart({ result, nutzungsart = 'vermietung', zinsbindung,
                 ...(zinsBoundaries.length > 0 ? [ZINSBINDUNG_LEGEND_ENTRY] : []),
               ]}
             />
-            <ReferenceLine y={0} stroke="var(--color-muted-foreground)" strokeDasharray="3 3" strokeOpacity={0.5} />
+            <ReferenceLine y={0} stroke={CHART_COLORS.muted} strokeDasharray="3 3" strokeOpacity={0.5} />
             {zinsBoundaries.filter((b) => b.year <= maxYear).map((b) => (
               <ReferenceLine
                 key={`zb-${b.year}`}
                 x={`J${b.year}`}
-                stroke="#f59e0b"
+                stroke={CHART_COLORS.warning}
                 strokeDasharray="6 3"
                 strokeWidth={2}
                 label={{
                   value: b.label,
                   position: 'top',
-                  fill: '#f59e0b',
+                  fill: CHART_COLORS.warning,
                   fontSize: 10,
                   fontWeight: 600,
                 }}

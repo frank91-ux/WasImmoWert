@@ -104,7 +104,8 @@ export function KiBeraterTab({ project, result, onChange }: KiBeraterTabProps) {
   const addScenarioAdjustment = useSimulationStore((s) => s.addScenarioAdjustment)
   const removeScenarioAdjustment = useSimulationStore((s) => s.removeScenarioAdjustment)
   const clearScenarioAdjustments = useSimulationStore((s) => s.clearScenarioAdjustments)
-  const etvProtokolle = useEtvStore((s) => s.protokolle[project.id] ?? [])
+  const etvProtokolleMaybe = useEtvStore((s) => s.protokolle[project.id])
+  const etvProtokolle = useMemo(() => etvProtokolleMaybe ?? [], [etvProtokolleMaybe])
   const overrideKeys = Object.keys(overrides)
   const hasOverrides = overrideKeys.length > 0
   const hasScenarios = scenarioAdjustments.length > 0

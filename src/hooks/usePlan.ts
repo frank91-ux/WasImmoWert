@@ -1,3 +1,4 @@
+import { useMemo } from 'react'
 import { useAuthStore } from '@/store/useAuthStore'
 import { useProjectStore } from '@/store/useProjectStore'
 
@@ -18,22 +19,24 @@ export interface PlanInfo {
 
 export function usePlan(): PlanInfo {
   const subscription = useAuthStore((s) => s.subscription)
-  const projects = useProjectStore((s) => s.projects)
+  const projectCount = useProjectStore((s) => s.projects.length)
 
-  const tier: PlanTier = subscription?.tier ?? 'free'
-  const isPro = tier === 'pro' || tier === 'lifetime'
-  const maxProjects = isPro ? Infinity : 3
+  return useMemo(() => {
+    const tier: PlanTier = subscription?.tier ?? 'free'
+    const isPro = tier === 'pro' || tier === 'lifetime'
+    const maxProjects = isPro ? Infinity : 3
 
-  return {
-    tier,
-    canCreateProject: projects.length < maxProjects,
-    maxProjects,
-    hasTaxModule: isPro,
-    hasAiChat: isPro,
-    hasExport: isPro,
-    hasAllCharts: isPro,
-    hasSensitivity: isPro,
-    hasComparison: isPro,
-    isPro,
-  }
+    return {
+      tier,
+      canCreateProject: projectCount < maxProjects,
+      maxProjects,
+      hasTaxModule: isPro,
+      hasAiChat: isPro,
+      hasExport: isPro,
+      hasAllCharts: isPro,
+      hasSensitivity: isPro,
+      hasComparison: isPro,
+      isPro,
+    }
+  }, [subscription?.tier, projectCount])
 }

@@ -97,7 +97,13 @@ function KpiMiniRow({ result, scenarioResult }: { result: CalculationResult; sce
 }
 
 export function KiBeraterTab({ project, result, onChange }: KiBeraterTabProps) {
-  const { overrides, setOverride, resetOverrides, scenarioAdjustments, addScenarioAdjustment, removeScenarioAdjustment, clearScenarioAdjustments } = useSimulationStore()
+  const overrides = useSimulationStore((s) => s.overrides)
+  const setOverride = useSimulationStore((s) => s.setOverride)
+  const resetOverrides = useSimulationStore((s) => s.resetOverrides)
+  const scenarioAdjustments = useSimulationStore((s) => s.scenarioAdjustments)
+  const addScenarioAdjustment = useSimulationStore((s) => s.addScenarioAdjustment)
+  const removeScenarioAdjustment = useSimulationStore((s) => s.removeScenarioAdjustment)
+  const clearScenarioAdjustments = useSimulationStore((s) => s.clearScenarioAdjustments)
   const etvProtokolle = useEtvStore((s) => s.protokolle[project.id] ?? [])
   const overrideKeys = Object.keys(overrides)
   const hasOverrides = overrideKeys.length > 0

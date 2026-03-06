@@ -104,11 +104,16 @@ function renderInline(text: string): React.ReactNode {
 }
 
 export function AiChat({ project, result, onParameterChange, onScenarioAdjustments, etvProtokolle }: AiChatProps) {
-  const {
-    messages, isLoading, error, apiKey,
-    addMessage, setLoading, setError, clearMessages,
-    loadApiKey, setApiKey, removeApiKey,
-  } = useAiChatStore()
+  const messages = useAiChatStore((s) => s.messages)
+  const isLoading = useAiChatStore((s) => s.isLoading)
+  const error = useAiChatStore((s) => s.error)
+  const apiKey = useAiChatStore((s) => s.apiKey)
+  const addMessage = useAiChatStore((s) => s.addMessage)
+  const setLoading = useAiChatStore((s) => s.setLoading)
+  const setError = useAiChatStore((s) => s.setError)
+  const clearMessages = useAiChatStore((s) => s.clearMessages)
+  const setApiKey = useAiChatStore((s) => s.setApiKey)
+  const removeApiKey = useAiChatStore((s) => s.removeApiKey)
 
   const { hasAiChat } = usePlan()
   const hasEnvKey = Boolean(import.meta.env.VITE_ANTHROPIC_API_KEY)
@@ -118,10 +123,10 @@ export function AiChat({ project, result, onParameterChange, onScenarioAdjustmen
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
 
-  // Load API key on mount
+  // Load API key on mount (run once only — use getState to avoid dependency on store function reference)
   useEffect(() => {
-    loadApiKey()
-  }, [loadApiKey])
+    useAiChatStore.getState().loadApiKey()
+  }, [])
 
   // Auto-scroll to bottom on new messages
   useEffect(() => {

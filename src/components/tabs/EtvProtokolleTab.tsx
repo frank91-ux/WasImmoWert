@@ -306,15 +306,22 @@ export function EtvProtokolleTab({ project }: Props) {
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [dragOver, setDragOver] = useState(false)
 
-  const { protokolle, isAnalysing, error, addProtokoll, removeProtokoll, setAnalysing, setError } = useEtvStore()
-  const { apiKey, loadApiKey, setApiKey } = useAiChatStore()
+  const protokolle = useEtvStore((s) => s.protokolle)
+  const isAnalysing = useEtvStore((s) => s.isAnalysing)
+  const error = useEtvStore((s) => s.error)
+  const addProtokoll = useEtvStore((s) => s.addProtokoll)
+  const removeProtokoll = useEtvStore((s) => s.removeProtokoll)
+  const setAnalysing = useEtvStore((s) => s.setAnalysing)
+  const setError = useEtvStore((s) => s.setError)
+  const apiKey = useAiChatStore((s) => s.apiKey)
+  const setApiKey = useAiChatStore((s) => s.setApiKey)
   const [showApiKeyInput, setShowApiKeyInput] = useState(false)
   const [tempApiKey, setTempApiKey] = useState('')
 
   const projectProtokolle = protokolle[project.id] ?? []
 
-  // Load API key on mount
-  useEffect(() => { loadApiKey() }, [loadApiKey])
+  // Load API key on mount (run once only)
+  useEffect(() => { useAiChatStore.getState().loadApiKey() }, [])
 
   const handleFiles = useCallback(
     async (files: FileList | File[]) => {

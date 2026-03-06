@@ -1,6 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
-import Logo from '@/components/shared/Logo';
+import { Logo } from '@/components/shared/Logo';
 
 export default function AgbPage() {
   const navigate = useNavigate();

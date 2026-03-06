@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
-import Logo from '@/components/shared/Logo';
+import { Logo } from '@/components/shared/Logo';
 
 export default function KontaktPage() {
   const [formData, setFormData] = useState({

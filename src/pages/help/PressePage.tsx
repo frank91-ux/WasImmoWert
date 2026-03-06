@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import { ArrowLeft, Download, Mail } from 'lucide-react';
-import Logo from '@/components/shared/Logo';
+import { Logo } from '@/components/shared/Logo';
 
 export default function PressePage() {
   return (

@@ -111,6 +111,7 @@ export function AiChat({ project, result, onParameterChange, onScenarioAdjustmen
   } = useAiChatStore()
 
   const { hasAiChat } = usePlan()
+  const hasEnvKey = Boolean(import.meta.env.VITE_ANTHROPIC_API_KEY)
 
   const [input, setInput] = useState('')
   const [keyInput, setKeyInput] = useState('')
@@ -269,15 +270,17 @@ export function AiChat({ project, result, onParameterChange, onScenarioAdjustmen
                 <Trash2 className="h-3.5 w-3.5" />
               </Button>
             )}
-            <Button
-              size="icon"
-              variant="ghost"
-              onClick={() => { removeApiKey(); clearMessages(); setError(null) }}
-              title="API-Key ändern"
-              className="h-7 w-7 text-muted-foreground hover:text-teal-600"
-            >
-              <Key className="h-3.5 w-3.5" />
-            </Button>
+            {!hasEnvKey && (
+              <Button
+                size="icon"
+                variant="ghost"
+                onClick={() => { removeApiKey(); clearMessages(); setError(null) }}
+                title="API-Key ändern"
+                className="h-7 w-7 text-muted-foreground hover:text-teal-600"
+              >
+                <Key className="h-3.5 w-3.5" />
+              </Button>
+            )}
           </div>
         </div>
 

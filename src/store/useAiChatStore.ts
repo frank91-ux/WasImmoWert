@@ -32,12 +32,13 @@ interface AiChatState {
 }
 
 const API_KEY_STORAGE = 'wasimmowert-anthropic-key'
+const ENV_API_KEY = import.meta.env.VITE_ANTHROPIC_API_KEY ?? ''
 
 export const useAiChatStore = create<AiChatState>((set) => ({
   messages: [],
   isLoading: false,
   error: null,
-  apiKey: null,
+  apiKey: ENV_API_KEY || null,
 
   addMessage: (msg) => set((s) => ({ messages: [...s.messages, msg] })),
   setLoading: (loading) => set(loading ? { isLoading: true, error: null } : { isLoading: false }),
@@ -45,6 +46,10 @@ export const useAiChatStore = create<AiChatState>((set) => ({
   clearMessages: () => set({ messages: [] }),
 
   loadApiKey: () => {
+    if (ENV_API_KEY) {
+      set({ apiKey: ENV_API_KEY })
+      return
+    }
     try {
       const key = localStorage.getItem(API_KEY_STORAGE)
       set({ apiKey: key })
@@ -63,6 +68,10 @@ export const useAiChatStore = create<AiChatState>((set) => ({
   },
 
   removeApiKey: () => {
+    if (ENV_API_KEY) {
+      set({ apiKey: ENV_API_KEY })
+      return
+    }
     try {
       localStorage.removeItem(API_KEY_STORAGE)
     } catch {

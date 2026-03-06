@@ -6,7 +6,7 @@ import {
 } from 'recharts'
 import { ChartCard, type TimeRange } from './ChartCard'
 import { formatEur } from '@/lib/format'
-import { AXIS_TICK, GRID_STYLE, ANIMATION_DURATION, CHART_COLORS, TOOLTIP_STYLE } from './chartTheme'
+import { AXIS_TICK, GRID_STYLE, ANIMATION_DURATION } from './chartTheme'
 import { CashflowInfoDialog } from './CashflowInfoDialog'
 
 interface MonthlyCashflowChartProps {

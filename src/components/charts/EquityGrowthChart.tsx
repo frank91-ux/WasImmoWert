@@ -55,7 +55,6 @@ export function EquityGrowthChart({ projection, zinsbindung, zinsbindungPeriods 
               iconType="line"
               iconSize={12}
               wrapperStyle={LEGEND_STYLE}
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
               payload={[
                 { value: 'Eigenkapital', type: 'line', color: CHART_COLORS.primary, id: 'eigenkapital' },
                 { value: 'Immobilienwert', type: 'line', color: CHART_COLORS.positive, id: 'immobilienWert' },

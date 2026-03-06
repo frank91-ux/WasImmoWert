@@ -91,7 +91,6 @@ export function CashflowChart({ result, nutzungsart = 'vermietung', zinsbindung,
               iconType="rect"
               iconSize={10}
               wrapperStyle={LEGEND_STYLE}
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
               payload={[
                 { value: nutzungsart === 'eigennutzung' ? 'Ersparte Miete' : 'Mieteinnahmen', type: 'rect', color: COLORS.mieteinnahmen, id: 'miet' },
                 { value: 'NK', type: 'rect', color: COLORS.nebenkosten, id: 'nk' },

@@ -6,7 +6,7 @@ import {
 } from 'recharts'
 import { ChartCard, type TimeRange } from './ChartCard'
 import { formatEur } from '@/lib/format'
-import { AXIS_TICK, GRID_STYLE, ANIMATION_DURATION } from './chartTheme'
+import { AXIS_TICK, GRID_STYLE, ANIMATION_DURATION, CHART_COLORS } from './chartTheme'
 import { CashflowInfoDialog } from './CashflowInfoDialog'
 
 interface MonthlyCashflowChartProps {
@@ -96,14 +96,14 @@ function getMaxYear(range: TimeRange, payoffYear: number | null, totalYears: num
 }
 
 const COLORS = {
-  einnahmen: '#10b981',
-  nebenkosten: '#f59e0b',
-  zinsen: '#ef4444',
-  tilgung: '#0d9488',
-  steuer: '#8b5cf6',
-  nettoPos: '#10b981',
-  nettoNeg: '#ef4444',
-  szenario: '#3b82f6',
+  einnahmen: CHART_COLORS.positive,
+  nebenkosten: CHART_COLORS.warning,
+  zinsen: CHART_COLORS.negative,
+  tilgung: CHART_COLORS.primary,
+  steuer: CHART_COLORS.palette[5],
+  nettoPos: CHART_COLORS.positive,
+  nettoNeg: CHART_COLORS.negative,
+  szenario: CHART_COLORS.secondary,
 }
 
 // Custom tooltip
@@ -114,7 +114,7 @@ function CashflowTooltip({ active, payload, label }: any) {
 
   const isScenario = dataPoint.SzenarioNetto != null
   const items = [
-    { label: isScenario ? 'Eff. Einnahmen' : 'Mieteinnahmen', value: dataPoint.Einnahmen, color: '#10b981', isIncome: true },
+    { label: isScenario ? 'Eff. Einnahmen' : 'Mieteinnahmen', value: dataPoint.Einnahmen, color: COLORS.einnahmen, isIncome: true },
     { label: 'Nebenkosten', value: -dataPoint.Nebenkosten, color: COLORS.nebenkosten },
     { label: 'Zinsen', value: -dataPoint.Zinsen, color: COLORS.zinsen },
     { label: 'Tilgung', value: -dataPoint.Tilgung, color: COLORS.tilgung },

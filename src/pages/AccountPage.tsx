@@ -1,6 +1,8 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
+import { motion } from 'framer-motion'
+import { fadeInUp, staggerContainer, staggerItem } from '@/lib/animations'
 import { useAuthStore } from '@/store/useAuthStore'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -200,15 +202,15 @@ export default function AccountPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white py-8 px-4 sm:px-6 lg:px-8">
+    <motion.div className="min-h-screen bg-gradient-to-b from-slate-50 to-white dark:from-background dark:to-background py-8 px-4 sm:px-6 lg:px-8" initial="hidden" animate="visible" variants={staggerContainer}>
       <div className="max-w-2xl mx-auto space-y-6">
         {/* Header */}
-        <div>
+        <motion.div variants={fadeInUp}>
           <h1 className="text-3xl font-bold text-foreground mb-2">Mein Account</h1>
           <p className="text-foreground/60">
             Verwalte dein Profil, Abo und Kontoeinstellungen
           </p>
-        </div>
+        </motion.div>
 
         {/* Profile Card */}
         <Card className="overflow-hidden border-0 shadow-sm">
@@ -356,6 +358,6 @@ export default function AccountPage() {
           onCancel={() => setDeleteAccountDialog(false)}
         />
       )}
-    </div>
+    </motion.div>
   )
 }

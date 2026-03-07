@@ -49,6 +49,8 @@ import {
   ClipboardList,
 } from 'lucide-react'
 import { toast } from 'sonner'
+import { motion } from 'framer-motion'
+import { fadeInUp, staggerContainer, staggerItem } from '@/lib/animations'
 import type { Project } from '@/calc/types'
 
 const TAB_IDS = [
@@ -365,9 +367,9 @@ export function ProjectPage() {
   }
 
   return (
-    <div className="space-y-4">
+    <motion.div className="space-y-4" initial="hidden" animate="visible" variants={staggerContainer}>
       {/* Header */}
-      <div className="flex items-center justify-between flex-wrap gap-3">
+      <motion.div className="flex items-center justify-between flex-wrap gap-3" variants={fadeInUp}>
         <div className="flex items-center gap-4 flex-wrap">
           <div className="flex items-center gap-1.5">
             <h1 className="text-2xl font-bold">{project.name}</h1>
@@ -416,7 +418,7 @@ export function ProjectPage() {
             {project.isInPortfolio ? 'Im Portfolio' : 'Zum Portfolio'}
           </Button>
         </div>
-      </div>
+      </motion.div>
 
       {/* Horizontal Tab Navigation */}
       <HorizontalTabBar
@@ -495,6 +497,6 @@ export function ProjectPage() {
         project={project}
         onChange={handleChange}
       />
-    </div>
+    </motion.div>
   )
 }

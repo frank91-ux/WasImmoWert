@@ -1,5 +1,7 @@
 import { useState, useCallback, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { motion } from 'framer-motion'
+import { fadeInUp, staggerContainer } from '@/lib/animations'
 import { useProjectStore } from '@/store/useProjectStore'
 import { useUiStore } from '@/store/useUiStore'
 import { AddressAutocomplete, type PlaceResult } from '@/components/shared/AddressAutocomplete'
@@ -77,13 +79,13 @@ export function NewProjectPage() {
   }
 
   return (
-    <div className="space-y-6 max-w-2xl mx-auto">
-      <div className="space-y-1">
+    <motion.div className="space-y-6 max-w-2xl mx-auto" initial="hidden" animate="visible" variants={staggerContainer}>
+      <motion.div className="space-y-1" variants={fadeInUp}>
         <h1 className="text-2xl font-bold">Neues Projekt</h1>
         <p className="text-muted-foreground text-sm">
           Geben Sie die Eckdaten ein. Alle weiteren Details können Sie anschließend bearbeiten.
         </p>
-      </div>
+      </motion.div>
 
       <Card className="border-2">
         <CardContent className="p-6">
@@ -256,7 +258,7 @@ export function NewProjectPage() {
         Projekt anlegen & Details bearbeiten
         <ArrowRight className="h-4 w-4" />
       </Button>
-    </div>
+    </motion.div>
   )
 }
 

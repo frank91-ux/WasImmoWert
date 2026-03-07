@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react'
+import { toast } from 'sonner'
 import { ThemeToggle } from '@/components/shared/ThemeToggle'
 import { ModeToggle } from '@/components/shared/ModeToggle'
 import {
@@ -106,6 +107,7 @@ export function Header() {
           <button
             className="relative p-2 rounded-lg hover:bg-muted transition-colors text-muted-foreground hover:text-foreground"
             title="Benachrichtigungen"
+            onClick={() => toast.info('Keine neuen Benachrichtigungen', { duration: 2000 })}
           >
             <Bell className="h-4 w-4" />
             <span className="absolute top-1.5 right-1.5 h-1.5 w-1.5 rounded-full bg-primary" />

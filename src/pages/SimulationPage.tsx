@@ -10,7 +10,7 @@ export function SimulationPage() {
     if (id) {
       navigate(`/projects/${id}?tab=simulation`, { replace: true })
     } else {
-      navigate('/', { replace: true })
+      navigate('/projects', { replace: true })
     }
   }, [id, navigate])
 

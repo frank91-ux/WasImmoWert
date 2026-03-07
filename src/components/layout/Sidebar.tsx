@@ -222,7 +222,7 @@ export function Sidebar() {
   const confirmDelete = () => {
     if (confirmDeleteId) {
       deleteProject(confirmDeleteId)
-      if (currentId === confirmDeleteId) navigate('/')
+      if (currentId === confirmDeleteId) navigate('/projects')
     }
     setConfirmDeleteId(null)
   }
@@ -382,8 +382,8 @@ export function Sidebar() {
         )}
         <div className="space-y-0.5">
           <button
-            className={cn('sidebar-nav-item', location.pathname === '/' && 'active')}
-            onClick={() => navigate('/')}
+            className={cn('sidebar-nav-item', (location.pathname === '/projects' || location.pathname === '/') && 'active')}
+            onClick={() => navigate('/projects')}
             title={collapsed ? 'Dashboard' : undefined}
           >
             <LayoutDashboard className="h-4 w-4 shrink-0" />

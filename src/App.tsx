@@ -4,6 +4,7 @@ import { AppShell } from '@/components/layout/AppShell'
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
 import { Toaster } from '@/components/ui/toaster'
 import { CookieBanner } from '@/components/shared/CookieBanner'
+import { useAuthStore } from '@/store/useAuthStore'
 
 // Eager-loaded pages
 import PublicHomePage from '@/pages/PublicHomePage'
@@ -40,13 +41,20 @@ function PageLoader() {
   )
 }
 
+/** Redirect authenticated users from / to /projects (Dashboard) */
+function HomeRedirect() {
+  const isAuthenticated = useAuthStore((s) => s.isAuthenticated())
+  if (isAuthenticated) return <Navigate to="/projects" replace />
+  return <PublicHomePage />
+}
+
 export default function App() {
   return (
     <BrowserRouter basename={import.meta.env.BASE_URL}>
       <Suspense fallback={<PageLoader />}>
         <Routes>
-          {/* Public route – SaaS landing page */}
-          <Route path="/" element={<PublicHomePage />} />
+          {/* Public route – SaaS landing page (redirects to dashboard if authenticated) */}
+          <Route path="/" element={<HomeRedirect />} />
 
           {/* Legal pages */}
           <Route path="/legal/datenschutz" element={<DatenschutzPage />} />

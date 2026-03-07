@@ -124,7 +124,10 @@ function ProjectCard({ project }: { project: Project }) {
   }
 
   return (
-    <Card className="group hover:shadow-lg transition-all hover:border-primary/30">
+    <Card
+      className="group hover:shadow-lg transition-all hover:border-primary/30 cursor-pointer"
+      onClick={() => navigate(`/projects/${project.id}`)}
+    >
       <CardContent className="p-5">
         <div className="flex items-start justify-between gap-3 mb-3">
           <div className="flex items-start gap-2.5 min-w-0">
@@ -155,7 +158,7 @@ function ProjectCard({ project }: { project: Project }) {
             variant="ghost"
             size="sm"
             className="flex-1 text-primary hover:text-primary"
-            onClick={() => navigate(`/projects/${project.id}`)}
+            onClick={(e) => { e.stopPropagation(); navigate(`/projects/${project.id}`) }}
           >
             Details <ArrowRight className="h-3 w-3" />
           </Button>
@@ -163,7 +166,7 @@ function ProjectCard({ project }: { project: Project }) {
             variant="ghost"
             size="icon"
             className="h-8 w-8"
-            onClick={() => duplicateProject(project.id)}
+            onClick={(e) => { e.stopPropagation(); duplicateProject(project.id) }}
           >
             <Copy className="h-3.5 w-3.5" />
           </Button>
@@ -171,7 +174,7 @@ function ProjectCard({ project }: { project: Project }) {
             variant="ghost"
             size="icon"
             className="h-8 w-8 text-destructive hover:text-destructive"
-            onClick={() => deleteProject(project.id)}
+            onClick={(e) => { e.stopPropagation(); deleteProject(project.id) }}
           >
             <Trash2 className="h-3.5 w-3.5" />
           </Button>

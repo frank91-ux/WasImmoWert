@@ -130,7 +130,7 @@ export function ProjectPage() {
     return (
       <div className="text-center py-12 text-muted-foreground">
         <p className="text-lg">Projekt nicht gefunden</p>
-        <Button variant="link" onClick={() => navigate('/')}>Zurück zum Dashboard</Button>
+        <Button variant="link" onClick={() => navigate('/projects')}>Zurück zum Dashboard</Button>
       </div>
     )
   }

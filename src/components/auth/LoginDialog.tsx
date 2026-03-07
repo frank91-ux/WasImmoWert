@@ -4,7 +4,7 @@ import { Dialog, DialogHeader, DialogTitle, DialogContent, DialogFooter } from '
 import { Button } from '@/components/ui/button'
 import {
   Home, LogIn, ArrowRight, UserPlus, Mail, Loader2,
-  Github,
+  Github, KeyRound,
 } from 'lucide-react'
 import { isSupabaseConfigured } from '@/lib/supabase'
 
@@ -17,10 +17,16 @@ interface LoginDialogProps {
   subtitle?: string
 }
 
-type TabMode = 'login' | 'register' | 'magic-link'
+type TabMode = 'login' | 'register' | 'magic-link' | 'reset-password'
 
 export function LoginDialog({ open, onOpenChange, onSuccess, subtitle }: LoginDialogProps) {
-  const { login, register, loginWithMagicLink, loginWithOAuth, skip, loading } = useAuthStore()
+  const login = useAuthStore((s) => s.login)
+  const register = useAuthStore((s) => s.register)
+  const loginWithMagicLink = useAuthStore((s) => s.loginWithMagicLink)
+  const loginWithOAuth = useAuthStore((s) => s.loginWithOAuth)
+  const resetPassword = useAuthStore((s) => s.resetPassword)
+  const skip = useAuthStore((s) => s.skip)
+  const loading = useAuthStore((s) => s.loading)
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [firstName, setFirstName] = useState('')
@@ -46,7 +52,7 @@ export function LoginDialog({ open, onOpenChange, onSuccess, subtitle }: LoginDi
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault()
     if (email.trim() && password.trim()) {
-      await register(email.trim(), password.trim())
+      await register(email.trim(), password.trim(), firstName.trim() || undefined)
       if (useAuthStore.getState().authMode === 'authenticated') {
         handleAuthSuccess()
       }
@@ -57,7 +63,13 @@ export function LoginDialog({ open, onOpenChange, onSuccess, subtitle }: LoginDi
     e.preventDefault()
     if (email.trim()) {
       await loginWithMagicLink(email.trim())
-      // Magic link doesn't authenticate immediately – user needs to click the email link
+    }
+  }
+
+  const handleResetPassword = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (email.trim()) {
+      await resetPassword(email.trim())
     }
   }
 
@@ -85,8 +97,8 @@ export function LoginDialog({ open, onOpenChange, onSuccess, subtitle }: LoginDi
           </p>
         </DialogHeader>
 
-        {/* OAuth Buttons */}
-        {hasSupabase && (
+        {/* OAuth Buttons — only on login/register tabs */}
+        {hasSupabase && (tab === 'login' || tab === 'register') && (
           <div className="space-y-2 mt-4">
             <Button
               type="button"
@@ -138,36 +150,38 @@ export function LoginDialog({ open, onOpenChange, onSuccess, subtitle }: LoginDi
         )}
 
         {/* Tab Switcher */}
-        <div className="flex gap-1 p-1 rounded-lg bg-muted/50">
-          <button
-            className={`flex-1 text-xs font-medium py-1.5 rounded-md transition-colors ${
-              tab === 'login' ? 'bg-background shadow-sm' : 'hover:bg-background/50'
-            }`}
-            onClick={() => setTab('login')}
-          >
-            Anmelden
-          </button>
-          {hasSupabase && (
-            <>
-              <button
-                className={`flex-1 text-xs font-medium py-1.5 rounded-md transition-colors ${
-                  tab === 'register' ? 'bg-background shadow-sm' : 'hover:bg-background/50'
-                }`}
-                onClick={() => setTab('register')}
-              >
-                Registrieren
-              </button>
-              <button
-                className={`flex-1 text-xs font-medium py-1.5 rounded-md transition-colors ${
-                  tab === 'magic-link' ? 'bg-background shadow-sm' : 'hover:bg-background/50'
-                }`}
-                onClick={() => setTab('magic-link')}
-              >
-                Magic Link
-              </button>
-            </>
-          )}
-        </div>
+        {tab !== 'reset-password' && (
+          <div className="flex gap-1 p-1 rounded-lg bg-muted/50">
+            <button
+              className={`flex-1 text-xs font-medium py-1.5 rounded-md transition-colors ${
+                tab === 'login' ? 'bg-background shadow-sm' : 'hover:bg-background/50'
+              }`}
+              onClick={() => setTab('login')}
+            >
+              Anmelden
+            </button>
+            {hasSupabase && (
+              <>
+                <button
+                  className={`flex-1 text-xs font-medium py-1.5 rounded-md transition-colors ${
+                    tab === 'register' ? 'bg-background shadow-sm' : 'hover:bg-background/50'
+                  }`}
+                  onClick={() => setTab('register')}
+                >
+                  Registrieren
+                </button>
+                <button
+                  className={`flex-1 text-xs font-medium py-1.5 rounded-md transition-colors ${
+                    tab === 'magic-link' ? 'bg-background shadow-sm' : 'hover:bg-background/50'
+                  }`}
+                  onClick={() => setTab('magic-link')}
+                >
+                  Magic Link
+                </button>
+              </>
+            )}
+          </div>
+        )}
 
         {/* Login Form */}
         {tab === 'login' && (
@@ -184,7 +198,18 @@ export function LoginDialog({ open, onOpenChange, onSuccess, subtitle }: LoginDi
               />
             </div>
             <div>
-              <label className="text-sm font-medium block mb-1.5">Passwort</label>
+              <div className="flex items-center justify-between mb-1.5">
+                <label className="text-sm font-medium">Passwort</label>
+                {hasSupabase && (
+                  <button
+                    type="button"
+                    className="text-xs text-primary hover:underline"
+                    onClick={() => setTab('reset-password')}
+                  >
+                    Passwort vergessen?
+                  </button>
+                )}
+              </div>
               <input
                 type="password"
                 value={password}
@@ -296,6 +321,44 @@ export function LoginDialog({ open, onOpenChange, onSuccess, subtitle }: LoginDi
               <Button type="button" variant="ghost" className="w-full" onClick={handleSkip}>
                 <ArrowRight className="h-4 w-4" />
                 Direkt starten ohne Anmeldung
+              </Button>
+            </DialogFooter>
+          </form>
+        )}
+
+        {/* Password Reset Form */}
+        {tab === 'reset-password' && (
+          <form onSubmit={handleResetPassword} className="space-y-3 mt-3">
+            <div className="flex items-center gap-2 mb-2">
+              <KeyRound className="h-4 w-4 text-muted-foreground" />
+              <span className="text-sm font-medium">Passwort zurücksetzen</span>
+            </div>
+            <div>
+              <label className="text-sm font-medium block mb-1.5">E-Mail</label>
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="ihre@email.de"
+                className="w-full rounded-md border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+                required
+              />
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Wir senden dir einen Link zum Zurücksetzen deines Passworts.
+            </p>
+            <DialogFooter className="flex-col gap-2 sm:flex-col p-0 pt-2">
+              <Button type="submit" className="w-full bg-gradient-to-r from-teal-500 to-emerald-600 hover:from-teal-600 hover:to-emerald-700 text-white border-0" disabled={loading}>
+                {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Mail className="h-4 w-4" />}
+                Reset-Link senden
+              </Button>
+              <Button
+                type="button"
+                variant="ghost"
+                className="w-full"
+                onClick={() => setTab('login')}
+              >
+                Zurück zur Anmeldung
               </Button>
             </DialogFooter>
           </form>

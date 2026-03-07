@@ -139,7 +139,12 @@ function FeatureList({ tier }: { tier: 'free' | 'pro' | 'lifetime' }) {
 /* ─── Main Account Page ─── */
 export default function AccountPage() {
   const navigate = useNavigate()
-  const { email, firstName, subscription, setSubscription, logout } = useAuthStore()
+  const email = useAuthStore((s) => s.email)
+  const firstName = useAuthStore((s) => s.firstName)
+  const subscription = useAuthStore((s) => s.subscription)
+  const activatePlan = useAuthStore((s) => s.activatePlan)
+  const logout = useAuthStore((s) => s.logout)
+  const deleteAccountAction = useAuthStore((s) => s.deleteAccount)
   const [cancelDialog, setCancelDialog] = useState(false)
   const [deleteAccountDialog, setDeleteAccountDialog] = useState(false)
   const [exportingData, setExportingData] = useState(false)
@@ -153,8 +158,8 @@ export default function AccountPage() {
     setCancelDialog(true)
   }
 
-  const confirmCancelSubscription = () => {
-    setSubscription({ tier: 'free', status: 'active' })
+  const confirmCancelSubscription = async () => {
+    await activatePlan('free')
     setCancelDialog(false)
     toast.success('Plan gekündigt. Dein Account wurde auf Kostenlos zurückgesetzt.')
   }
@@ -173,16 +178,16 @@ export default function AccountPage() {
 
   const confirmDeleteAccount = async () => {
     setDeletingAccount(true)
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1500))
-    setDeletingAccount(false)
-    setDeleteAccountDialog(false)
-    toast.error('Dein Account und alle Daten wurden gelöscht. Du wirst abgemeldet...')
-    // Simulate logout after deletion
-    setTimeout(() => {
-      logout()
+    try {
+      await deleteAccountAction()
+      setDeletingAccount(false)
+      setDeleteAccountDialog(false)
+      toast.error('Dein Account und alle Daten wurden gelöscht.')
       navigate('/')
-    }, 2000)
+    } catch {
+      setDeletingAccount(false)
+      toast.error('Fehler beim Löschen des Accounts')
+    }
   }
 
   const handleLogout = async () => {

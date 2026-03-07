@@ -17,6 +17,7 @@ const ComparisonPage = lazy(() => import('@/pages/ComparisonPage').then(m => ({ 
 const PortfolioPage = lazy(() => import('@/pages/PortfolioPage').then(m => ({ default: m.PortfolioPage })))
 const BewertungenDashboard = lazy(() => import('@/pages/BewertungenDashboard').then(m => ({ default: m.BewertungenDashboard })))
 const AccountPage = lazy(() => import('@/pages/AccountPage'))
+const AuthCallbackPage = lazy(() => import('@/pages/AuthCallbackPage'))
 
 // Legal pages (lazy)
 const DatenschutzPage = lazy(() => import('@/pages/legal/DatenschutzPage'))
@@ -57,6 +58,9 @@ export default function App() {
           <Route path="/help/support" element={<SupportPage />} />
           <Route path="/help/feedback" element={<FeedbackPage />} />
           <Route path="/help/presse" element={<PressePage />} />
+
+          {/* Auth callback (email confirmation, password reset, OAuth) */}
+          <Route path="/auth/callback" element={<AuthCallbackPage />} />
 
           {/* Protected routes – require auth or skip */}
           <Route element={<ProtectedRoute />}>

@@ -51,20 +51,19 @@ export function SubscriptionModal({
   onOpenChange,
   selectedPlan,
 }: SubscriptionModalProps) {
-  const setSubscription = useAuthStore((state) => state.setSubscription)
+  const activatePlan = useAuthStore((state) => state.activatePlan)
 
   const plan = PLANS[selectedPlan]
   const PlanIcon = plan.icon
 
-  const handleActivate = () => {
-    setSubscription({
-      tier: selectedPlan,
-      status: 'active',
-    })
+  const handleActivate = async () => {
+    await activatePlan(selectedPlan)
 
     const planName = plan.name
     toast.success(`${planName} Plan aktiviert!`, {
-      description: 'Dein Abonnement wurde erfolgreich aktiviert.',
+      description: selectedPlan === 'free'
+        ? 'Dein kostenloser Plan ist aktiv.'
+        : 'Dein Abonnement wurde erfolgreich aktiviert. (Demo-Modus — Stripe kommt bald)',
     })
 
     onOpenChange(false)

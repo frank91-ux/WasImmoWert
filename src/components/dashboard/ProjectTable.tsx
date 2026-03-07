@@ -7,6 +7,7 @@ import { RentabilitaetBadge } from '@/components/results/RentabilitaetBadge'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { formatEur, formatPercent } from '@/lib/format'
+import { berechneMarktvergleich } from '@/data/marktdaten'
 import { ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react'
 
 type SortKey = 'name' | 'kaufpreis' | 'cashflow' | 'bruttomietrendite' | 'eigenkapitalrendite' | 'score'
@@ -33,7 +34,10 @@ export function ProjectTable({ projects, selectedIds, onToggleSelect, onCompare 
   const projectsWithResults = useMemo(() => {
     return projects.map((project) => {
       const result = calculateAll(project)
-      const score = calculateRentabilitaet(result.kpis, project.nutzungsart)
+      const preisProQm = project.wohnflaeche > 0 ? project.kaufpreis / project.wohnflaeche : 0
+      const mieteProQm = project.wohnflaeche > 0 ? project.monatsmieteKalt / project.wohnflaeche : 0
+      const markt = berechneMarktvergleich(preisProQm, mieteProQm, project.lat, project.lng)
+      const score = calculateRentabilitaet(result.kpis, project.nutzungsart, project, markt)
       return { project, result, score }
     })
   }, [projects])

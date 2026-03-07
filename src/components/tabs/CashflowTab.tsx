@@ -192,7 +192,7 @@ export function CashflowTab({ project, result, onChange }: CashflowTabProps) {
                         if (!checked) setMfhOpen(false)
                       }
                     }}
-                    className="h-3.5 w-3.5 rounded border-input accent-teal-600"
+                    className="h-3.5 w-3.5 rounded border-input accent-blue-600"
                   />
                   <span className="text-xs text-muted-foreground group-hover:text-foreground transition-colors">
                     Mehrere Wohnungen im Objekt
@@ -214,7 +214,7 @@ export function CashflowTab({ project, result, onChange }: CashflowTabProps) {
                           }
                         }
                       }}
-                      className="flex items-center gap-1.5 text-xs font-medium text-teal-600 hover:text-teal-700 transition-colors"
+                      className="flex items-center gap-1.5 text-xs font-medium text-blue-600 hover:text-blue-700 transition-colors"
                     >
                       <Home className="h-3.5 w-3.5" />
                       Wohnungen bearbeiten ({(project.wohnungen ?? []).length} Einheiten · {wohnungenSumme.toLocaleString('de-DE')} €/Mon)
@@ -276,7 +276,7 @@ export function CashflowTab({ project, result, onChange }: CashflowTabProps) {
                             {(project.wohnungen ?? []).length < MAX_WOHNUNGEN ? (
                               <button
                                 onClick={handleAddWohnung}
-                                className="flex items-center gap-1 text-xs text-teal-600 hover:text-teal-700 font-medium transition-colors"
+                                className="flex items-center gap-1 text-xs text-blue-600 hover:text-blue-700 font-medium transition-colors"
                               >
                                 <Plus className="h-3 w-3" /> Wohnung hinzufügen
                               </button>
@@ -408,7 +408,7 @@ export function CashflowTab({ project, result, onChange }: CashflowTabProps) {
                     type="checkbox"
                     checked={nebenkostenMfhOpen}
                     onChange={(e) => setNebenkostenMfhOpen(e.target.checked)}
-                    className="h-3.5 w-3.5 rounded border-input accent-teal-600"
+                    className="h-3.5 w-3.5 rounded border-input accent-blue-600"
                   />
                   <span className="text-xs text-muted-foreground group-hover:text-foreground transition-colors">
                     Nebenkosten pro Wohnung aufschlüsseln
@@ -528,7 +528,7 @@ export function CashflowTab({ project, result, onChange }: CashflowTabProps) {
             {/* €-Aufschlüsselung */}
             <div className="space-y-1.5 pt-3 border-t text-xs">
               {project.beweglicheGegenstaende > 0 && (
-                <div className="flex justify-between text-teal-600">
+                <div className="flex justify-between text-blue-600">
                   <span>Bemessungsgrundlage (KP − Bewegl.)</span>
                   <span className="tabular-nums font-medium">{formatEur(Math.max(0, project.kaufpreis - project.beweglicheGegenstaende))}</span>
                 </div>

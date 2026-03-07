@@ -42,7 +42,7 @@ export default function KontaktPage() {
         </p>
 
         {submitted && (
-          <div className="bg-teal-50 border border-teal-200 text-teal-700 px-6 py-4 rounded-lg mb-8">
+          <div className="bg-blue-50 border border-blue-200 text-blue-700 px-6 py-4 rounded-lg mb-8">
             <p className="font-semibold">Vielen Dank! Ihre Nachricht wurde erfolgreich versendet.</p>
             <p className="text-sm mt-1">Wir werden uns in Kürze bei Ihnen melden.</p>
           </div>
@@ -57,7 +57,7 @@ export default function KontaktPage() {
               value={formData.name}
               onChange={handleChange}
               required
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
               placeholder="Ihr Name"
             />
           </div>
@@ -70,7 +70,7 @@ export default function KontaktPage() {
               value={formData.email}
               onChange={handleChange}
               required
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
               placeholder="ihre.email@example.com"
             />
           </div>
@@ -83,7 +83,7 @@ export default function KontaktPage() {
               value={formData.subject}
               onChange={handleChange}
               required
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
               placeholder="Wie können wir helfen?"
             />
           </div>
@@ -96,14 +96,14 @@ export default function KontaktPage() {
               onChange={handleChange}
               required
               rows={6}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none resize-none"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none resize-none"
               placeholder="Schreiben Sie Ihre Frage oder Ihren Anliegen..."
             />
           </div>
 
           <button
             type="submit"
-            className="w-full bg-teal-600 hover:bg-teal-700 text-white font-semibold py-3 rounded-lg transition-colors"
+            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-lg transition-colors"
           >
             Nachricht senden
           </button>
@@ -112,7 +112,7 @@ export default function KontaktPage() {
         <div className="mt-12 pt-8 border-t border-gray-200">
           <Link
             to="/"
-            className="inline-flex items-center gap-2 text-teal-600 hover:text-teal-700 font-medium"
+            className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-700 font-medium"
           >
             <ArrowLeft className="w-4 h-4" />
             Zur Startseite

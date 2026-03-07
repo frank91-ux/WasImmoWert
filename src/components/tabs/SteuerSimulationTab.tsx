@@ -92,9 +92,9 @@ export function SteuerSimulationTab({ project, result, onChange }: SteuerSimulat
               onClick={() => setInfoOpen('afaBetrag')}
               className="flex items-center gap-2 text-left rounded-lg p-1.5 -m-1.5 hover:bg-muted/50 transition-colors cursor-pointer group"
             >
-              <TrendingDown className="h-4 w-4 shrink-0 text-teal-600" />
+              <TrendingDown className="h-4 w-4 shrink-0 text-blue-600" />
               <div className="min-w-0">
-                <div className="text-sm font-bold tabular-nums text-teal-600">{formatEur(afaBetrag)}/Jahr</div>
+                <div className="text-sm font-bold tabular-nums text-blue-600">{formatEur(afaBetrag)}/Jahr</div>
                 <div className="text-[10px] text-muted-foreground flex items-center gap-1">AfA-Betrag <HelpCircle className="h-2.5 w-2.5 opacity-0 group-hover:opacity-60 transition-opacity" /></div>
               </div>
             </button>
@@ -104,9 +104,9 @@ export function SteuerSimulationTab({ project, result, onChange }: SteuerSimulat
               onClick={() => setInfoOpen('effSteuersatz')}
               className="flex items-center gap-2 text-left rounded-lg p-1.5 -m-1.5 hover:bg-muted/50 transition-colors cursor-pointer group"
             >
-              <Percent className="h-4 w-4 shrink-0 text-teal-600" />
+              <Percent className="h-4 w-4 shrink-0 text-blue-600" />
               <div className="min-w-0">
-                <div className="text-sm font-bold tabular-nums text-teal-600">{project.persoenlicherSteuersatz}%</div>
+                <div className="text-sm font-bold tabular-nums text-blue-600">{project.persoenlicherSteuersatz}%</div>
                 <div className="text-[10px] text-muted-foreground flex items-center gap-1">Eff. Steuersatz <HelpCircle className="h-2.5 w-2.5 opacity-0 group-hover:opacity-60 transition-opacity" /></div>
               </div>
             </button>

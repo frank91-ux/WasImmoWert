@@ -51,7 +51,7 @@ export default function CookiePage() {
         <div className="mb-8">
           <button
             onClick={() => navigate('/')}
-            className="flex items-center gap-2 text-teal-600 hover:text-teal-700 mb-6"
+            className="flex items-center gap-2 text-blue-600 hover:text-blue-700 mb-6"
           >
             <ArrowLeft size={20} />
             Zurück
@@ -81,7 +81,7 @@ export default function CookiePage() {
                     <h3 className="text-lg font-semibold text-gray-900">Notwendige Cookies</h3>
                     <p className="text-sm text-gray-600">Erforderlich</p>
                   </div>
-                  <div className="relative inline-block w-12 h-6 bg-teal-600 rounded-full">
+                  <div className="relative inline-block w-12 h-6 bg-blue-600 rounded-full">
                     <span className="absolute top-1 left-1 w-4 h-4 bg-white rounded-full"></span>
                   </div>
                 </div>
@@ -100,7 +100,7 @@ export default function CookiePage() {
                   <button
                     onClick={() => handleToggle('analytics')}
                     className={`relative inline-block w-12 h-6 rounded-full transition-colors ${
-                      settings.analytics ? 'bg-teal-600' : 'bg-gray-300'
+                      settings.analytics ? 'bg-blue-600' : 'bg-gray-300'
                     }`}
                   >
                     <span
@@ -125,7 +125,7 @@ export default function CookiePage() {
                   <button
                     onClick={() => handleToggle('marketing')}
                     className={`relative inline-block w-12 h-6 rounded-full transition-colors ${
-                      settings.marketing ? 'bg-teal-600' : 'bg-gray-300'
+                      settings.marketing ? 'bg-blue-600' : 'bg-gray-300'
                     }`}
                   >
                     <span
@@ -160,7 +160,7 @@ export default function CookiePage() {
         </div>
 
         {saved && (
-          <div className="mt-6 p-4 bg-teal-50 border border-teal-200 rounded-lg text-teal-700">
+          <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg text-blue-700">
             Einstellungen gespeichert!
           </div>
         )}
@@ -168,13 +168,13 @@ export default function CookiePage() {
         <div className="mt-8 flex gap-3">
           <button
             onClick={handleSave}
-            className="flex-1 bg-teal-600 hover:bg-teal-700 text-white font-semibold py-3 px-4 rounded-lg transition-colors"
+            className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-lg transition-colors"
           >
             Speichern
           </button>
           <button
             onClick={handleAcceptAll}
-            className="flex-1 border border-teal-600 text-teal-600 hover:bg-teal-50 font-semibold py-3 px-4 rounded-lg transition-colors"
+            className="flex-1 border border-blue-600 text-blue-600 hover:bg-blue-50 font-semibold py-3 px-4 rounded-lg transition-colors"
           >
             Alle akzeptieren
           </button>
@@ -183,7 +183,7 @@ export default function CookiePage() {
         <div className="mt-12 pt-6 border-t border-gray-200">
           <button
             onClick={() => navigate('/')}
-            className="text-teal-600 hover:text-teal-700 flex items-center gap-2"
+            className="text-blue-600 hover:text-blue-700 flex items-center gap-2"
           >
             <ArrowLeft size={20} />
             Zur Startseite

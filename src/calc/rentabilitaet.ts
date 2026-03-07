@@ -1,4 +1,5 @@
 import type { KpiResult, Project } from './types'
+import type { MarktvergleichResult } from '@/data/marktdaten'
 
 export interface RentabilitaetBreakdown {
   kpiKey: string
@@ -93,7 +94,8 @@ function getContextMultiplier(
 export function calculateRentabilitaet(
   kpis: KpiResult,
   nutzungsart: 'vermietung' | 'eigennutzung',
-  project?: Project
+  project?: Project,
+  marktvergleich?: MarktvergleichResult
 ): RentabilitaetScore {
   type RawBreakdown = {
     kpiKey: string
@@ -112,28 +114,28 @@ export function calculateRentabilitaet(
         label: 'Cashflow/Mon',
         rawValue: kpis.monatlichCashflowNachSteuer,
         normalizedScore: normalize(kpis.monatlichCashflowNachSteuer, -500, 500),
-        baseWeight: 0.25,
+        baseWeight: 0.22,
       },
       {
         kpiKey: 'eigenkapitalrendite',
         label: 'EK-Rendite',
         rawValue: kpis.eigenkapitalrendite,
         normalizedScore: normalize(kpis.eigenkapitalrendite, 0, 10),
-        baseWeight: 0.20,
+        baseWeight: 0.17,
       },
       {
         kpiKey: 'bruttomietrendite',
         label: 'Bruttorendite',
         rawValue: kpis.bruttomietrendite,
         normalizedScore: normalize(kpis.bruttomietrendite, 0, 6),
-        baseWeight: 0.15,
+        baseWeight: 0.13,
       },
       {
         kpiKey: 'dscr',
         label: 'DSCR',
         rawValue: kpis.dscr === Infinity ? 10 : kpis.dscr,
         normalizedScore: normalize(kpis.dscr === Infinity ? 2 : kpis.dscr, 0.5, 1.5),
-        baseWeight: 0.15,
+        baseWeight: 0.13,
       },
       {
         kpiKey: 'kaufpreisfaktor',
@@ -147,9 +149,30 @@ export function calculateRentabilitaet(
         label: 'Vermögenszuwachs',
         rawValue: kpis.vermoegenszuwachsMonatlich,
         normalizedScore: normalize(kpis.vermoegenszuwachsMonatlich, -500, 800),
-        baseWeight: 0.15,
+        baseWeight: 0.13,
       },
     )
+    // Marktvergleich-KPIs (nur wenn Marktdaten verfügbar)
+    if (marktvergleich?.verfuegbar) {
+      raw.push(
+        {
+          kpiKey: 'marktvergleichKauf',
+          label: 'Preis vs. Markt',
+          rawValue: marktvergleich.abweichungKaufProzent,
+          // Invertiert: günstiger als Markt = besser
+          normalizedScore: normalizeInverted(marktvergleich.abweichungKaufProzent, -15, 25),
+          baseWeight: 0.07,
+        },
+        {
+          kpiKey: 'marktvergleichMiete',
+          label: 'Miete vs. Markt',
+          rawValue: marktvergleich.abweichungMieteProzent,
+          // Höhere Miete = höhere Einnahmen = besser
+          normalizedScore: normalize(marktvergleich.abweichungMieteProzent, -15, 25),
+          baseWeight: 0.05,
+        },
+      )
+    }
   } else {
     // Eigennutzung scoring
     raw.push(

@@ -23,7 +23,7 @@ export function Dialog({ open, onOpenChange, children, size = 'default' }: Dialo
     <div className="fixed inset-0 z-50">
       <div className="fixed inset-0 bg-black/50" onClick={() => onOpenChange(false)} />
       <div className="fixed inset-0 flex items-center justify-center p-4">
-        <div className={`relative bg-background rounded-lg shadow-lg ${SIZE_MAP[size]} w-full max-h-[85vh] overflow-auto`}>
+        <div className={`relative bg-background text-foreground rounded-lg shadow-lg ${SIZE_MAP[size]} w-full max-h-[85vh] overflow-auto`}>
           {/* F9: Always-visible close button */}
           <button
             className="sticky top-0 float-right mt-4 mr-4 z-10 rounded-sm opacity-70 hover:opacity-100 bg-background/80 backdrop-blur-sm p-1"

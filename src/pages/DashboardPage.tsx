@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
+import { staggerContainer, staggerItem } from '@/lib/animations'
 import { useProjectStore } from '@/store/useProjectStore'
 import { useUiStore } from '@/store/useUiStore'
 import { useCalculation } from '@/hooks/useCalculation'
@@ -18,6 +19,7 @@ import {
   MapPin, ArrowUpRight, ArrowDownRight,
 } from 'lucide-react'
 import { formatEur, formatPercent } from '@/lib/format'
+import { berechneMarktvergleich } from '@/data/marktdaten'
 import { toast } from 'sonner'
 import { usePlan } from '@/hooks/usePlan'
 import { Sparkles } from 'lucide-react'
@@ -42,7 +44,7 @@ function KpiCard({
   trendLabel?: string
 }) {
   return (
-    <Card className="overflow-hidden">
+    <Card className="overflow-hidden hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200">
       <CardContent className="p-5">
         <div className="flex items-start justify-between mb-3">
           <div className={`h-10 w-10 rounded-xl flex items-center justify-center ${iconGradient}`}>
@@ -69,23 +71,64 @@ function KpiCard({
 function ProjectCard({ project }: { project: Project }) {
   const navigate = useNavigate()
   const { deleteProject, duplicateProject } = useProjectStore()
+  const { mode } = useUiStore()
   const result = useCalculation(project)
 
+  const markt = useMemo(() => {
+    if (!project.wohnflaeche || project.wohnflaeche <= 0) return undefined
+    const preisProQm = project.kaufpreis / project.wohnflaeche
+    const mieteProQm = project.monatsmieteKalt / project.wohnflaeche
+    return berechneMarktvergleich(preisProQm, mieteProQm, project.lat, project.lng)
+  }, [project.kaufpreis, project.wohnflaeche, project.monatsmieteKalt, project.lat, project.lng])
+
   const rentabilitaet = useMemo(
-    () => result ? calculateRentabilitaet(result.kpis, project.nutzungsart, project) : null,
-    [result, project.nutzungsart, project]
+    () => result ? calculateRentabilitaet(result.kpis, project.nutzungsart, project, markt) : null,
+    [result, project.nutzungsart, project, markt]
   )
 
   if (!result || !rentabilitaet) return null
 
   const cashflow = result.kpis.monatlichCashflowNachSteuer
+  const isPro = mode === 'pro'
+
+  // Build KPI list based on mode
+  type KpiItem = { label: string; value: string; color?: string }
+  const kpiItems: KpiItem[] = [
+    { label: 'Kaufpreis', value: formatEur(project.kaufpreis) },
+    { label: 'Rendite', value: formatPercent(result.kpis.bruttomietrendite) },
+    {
+      label: 'Cashflow/Mon',
+      value: formatEur(cashflow),
+      color: cashflow >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400',
+    },
+    { label: 'EK-Rendite', value: formatPercent(result.kpis.eigenkapitalrendite) },
+  ]
+  if (isPro) {
+    kpiItems.push(
+      { label: 'DSCR', value: result.kpis.dscr === Infinity ? '∞' : result.kpis.dscr.toFixed(2) },
+      { label: 'Vermögen/Mon', value: formatEur(result.kpis.vermoegenszuwachsMonatlich) },
+    )
+    if (markt?.verfuegbar) {
+      kpiItems.push({
+        label: 'Preis vs. Markt',
+        value: `${markt.abweichungKaufProzent > 0 ? '+' : ''}${markt.abweichungKaufProzent.toFixed(0)}%`,
+        color: markt.preisLevel === 'guenstig' ? 'text-emerald-600 dark:text-emerald-400' : markt.preisLevel === 'teuer' ? 'text-red-600 dark:text-red-400' : undefined,
+      })
+      if (project.monatsmieteKalt > 0 && project.wohnflaeche > 0) {
+        kpiItems.push({
+          label: 'Miete vs. Markt',
+          value: `${markt.abweichungMieteProzent > 0 ? '+' : ''}${markt.abweichungMieteProzent.toFixed(0)}%`,
+        })
+      }
+    }
+  }
 
   return (
     <Card className="group hover:shadow-lg transition-all hover:border-primary/30">
       <CardContent className="p-5">
         <div className="flex items-start justify-between gap-3 mb-3">
           <div className="flex items-start gap-2.5 min-w-0">
-            <div className="h-9 w-9 rounded-lg bg-gradient-to-br from-teal-500 to-emerald-600 flex items-center justify-center shrink-0">
+            <div className="h-9 w-9 rounded-lg brand-gradient flex items-center justify-center shrink-0">
               <MapPin className="h-4 w-4 text-white" />
             </div>
             <div className="min-w-0">
@@ -98,25 +141,13 @@ function ProjectCard({ project }: { project: Project }) {
           <RentabilitaetBadge score={rentabilitaet} compact />
         </div>
 
-        <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm mb-4">
-          <div>
-            <div className="text-xs text-muted-foreground">Kaufpreis</div>
-            <div className="font-semibold tabular-nums">{formatEur(project.kaufpreis)}</div>
-          </div>
-          <div>
-            <div className="text-xs text-muted-foreground">Rendite</div>
-            <div className="font-semibold tabular-nums">{formatPercent(result.kpis.bruttomietrendite)}</div>
-          </div>
-          <div>
-            <div className="text-xs text-muted-foreground">Cashflow/Mon</div>
-            <div className={`font-semibold tabular-nums ${cashflow >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'}`}>
-              {formatEur(cashflow)}
+        <div className={`grid ${isPro ? 'grid-cols-3' : 'grid-cols-2'} gap-x-3 gap-y-2 text-sm mb-4`}>
+          {kpiItems.slice(0, isPro ? 9 : 4).map((kpi) => (
+            <div key={kpi.label}>
+              <div className="text-xs text-muted-foreground">{kpi.label}</div>
+              <div className={`font-semibold tabular-nums ${kpi.color || ''}`}>{kpi.value}</div>
             </div>
-          </div>
-          <div>
-            <div className="text-xs text-muted-foreground">EK-Rendite</div>
-            <div className="font-semibold tabular-nums">{formatPercent(result.kpis.eigenkapitalrendite)}</div>
-          </div>
+          ))}
         </div>
 
         <div className="flex items-center gap-1 pt-3 border-t">
@@ -291,12 +322,12 @@ export function DashboardPage() {
           className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4"
           initial="hidden"
           animate="visible"
-          variants={{ hidden: {}, visible: { transition: { staggerChildren: 0.08 } } }}
+          variants={staggerContainer}
         >
-          <motion.div variants={{ hidden: { opacity: 0, y: 16 }, visible: { opacity: 1, y: 0 } }}>
+          <motion.div variants={staggerItem}>
             <KpiCard
               icon={Building2}
-              iconGradient="bg-gradient-to-br from-emerald-400 to-emerald-600"
+              iconGradient="gradient-card-blue"
               value={String(aggregateKpis.count)}
               label="Immobilien Gesamt"
               sublabel={`${aggregateKpis.count} Objekt${aggregateKpis.count !== 1 ? 'e' : ''} analysiert`}
@@ -304,10 +335,10 @@ export function DashboardPage() {
               trendLabel={`+${aggregateKpis.count} gesamt`}
             />
           </motion.div>
-          <motion.div variants={{ hidden: { opacity: 0, y: 16 }, visible: { opacity: 1, y: 0 } }}>
+          <motion.div variants={staggerItem}>
             <KpiCard
               icon={DollarSign}
-              iconGradient="bg-gradient-to-br from-amber-400 to-orange-500"
+              iconGradient="gradient-card-yellow"
               value={formatEur(aggregateKpis.totalCashflow)}
               label="Monatlicher Cashflow"
               sublabel="Netto nach Kosten"
@@ -315,10 +346,10 @@ export function DashboardPage() {
               trendLabel={aggregateKpis.totalCashflow >= 0 ? 'positiv' : 'negativ'}
             />
           </motion.div>
-          <motion.div variants={{ hidden: { opacity: 0, y: 16 }, visible: { opacity: 1, y: 0 } }}>
+          <motion.div variants={staggerItem}>
             <KpiCard
               icon={TrendingUp}
-              iconGradient="bg-gradient-to-br from-teal-400 to-teal-600"
+              iconGradient="gradient-card-green"
               value={formatPercent(aggregateKpis.avgRendite)}
               label="Ø Rendite"
               sublabel="Über alle Objekte"
@@ -326,10 +357,10 @@ export function DashboardPage() {
               trendLabel={`Ø ${formatPercent(aggregateKpis.avgRendite)}`}
             />
           </motion.div>
-          <motion.div variants={{ hidden: { opacity: 0, y: 16 }, visible: { opacity: 1, y: 0 } }}>
+          <motion.div variants={staggerItem}>
             <KpiCard
               icon={BarChart3}
-              iconGradient="bg-gradient-to-br from-pink-400 to-rose-600"
+              iconGradient="gradient-card-pink"
               value={formatEur(aggregateKpis.avgCashflow)}
               label="Ø Cashflow/Objekt"
               sublabel="Pro Monat"
@@ -342,9 +373,9 @@ export function DashboardPage() {
 
       {/* Upgrade Nudge for Free Users */}
       {!plan.isPro && projects.length >= 2 && (
-        <div className="rounded-xl border border-teal-200 dark:border-teal-800 bg-gradient-to-r from-teal-50 to-emerald-50 dark:from-teal-950/30 dark:to-emerald-950/30 p-4 flex items-center justify-between gap-4">
+        <div className="rounded-xl border border-blue-200 dark:border-blue-800 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/30 dark:to-indigo-950/30 p-4 flex items-center justify-between gap-4">
           <div className="flex items-center gap-3">
-            <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-teal-500 to-emerald-600 flex items-center justify-center shrink-0">
+            <div className="h-10 w-10 rounded-xl brand-gradient flex items-center justify-center shrink-0">
               <Sparkles className="h-5 w-5 text-white" />
             </div>
             <div>
@@ -358,7 +389,7 @@ export function DashboardPage() {
           </div>
           <Button
             size="sm"
-            className="bg-gradient-to-r from-teal-500 to-emerald-600 hover:from-teal-600 hover:to-emerald-700 text-white border-0 shrink-0"
+            className="btn-brand shrink-0"
             onClick={() => navigate('/account')}
           >
             Upgrade
@@ -370,7 +401,7 @@ export function DashboardPage() {
       {projects.length === 0 ? (
         <Card className="border-dashed border-2">
           <CardContent className="flex flex-col items-center justify-center py-16">
-            <div className="h-16 w-16 rounded-2xl bg-gradient-to-br from-teal-100 to-emerald-100 dark:from-teal-900/30 dark:to-emerald-900/30 flex items-center justify-center mb-5">
+            <div className="h-16 w-16 rounded-2xl bg-gradient-to-br from-blue-100 to-indigo-100 dark:from-blue-900/30 dark:to-indigo-900/30 flex items-center justify-center mb-5">
               <Building2 className="h-8 w-8 text-primary" />
             </div>
             <h3 className="text-xl font-semibold mb-2">Noch keine Projekte</h3>
@@ -378,7 +409,7 @@ export function DashboardPage() {
               Erstellen Sie ein neues Projekt, um die Rentabilität einer Immobilie zu berechnen.
               Geben Sie einfach Kaufpreis, Adresse und Quadratmeter ein.
             </p>
-            <Button onClick={handleNewProject} className="bg-gradient-to-r from-teal-500 to-emerald-600 hover:from-teal-600 hover:to-emerald-700 text-white border-0">
+            <Button onClick={handleNewProject} className="btn-brand">
               <Plus className="h-4 w-4" />
               Erstes Projekt anlegen
             </Button>
@@ -392,7 +423,7 @@ export function DashboardPage() {
               <h3 className="text-lg font-semibold">Immobilien Portfolio</h3>
               <p className="text-sm text-muted-foreground">Übersicht aller Objekte im Portfolio</p>
             </div>
-            <Button onClick={handleNewProject} className="bg-gradient-to-r from-teal-500 to-emerald-600 hover:from-teal-600 hover:to-emerald-700 text-white border-0">
+            <Button onClick={handleNewProject} className="btn-brand">
               <Plus className="h-4 w-4" />
               Objekt hinzufügen
             </Button>

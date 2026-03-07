@@ -113,7 +113,7 @@ export default function AuthCallbackPage() {
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           <div className="flex justify-center mb-4">
-            <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-teal-500 to-emerald-600 flex items-center justify-center">
+            <div className="h-12 w-12 rounded-xl brand-gradient flex items-center justify-center">
               <Home className="h-6 w-6 text-white" />
             </div>
           </div>
@@ -128,7 +128,7 @@ export default function AuthCallbackPage() {
           {/* Loading State */}
           {state === 'loading' && (
             <div className="flex flex-col items-center gap-4 py-8">
-              <Loader2 className="h-8 w-8 animate-spin text-teal-500" />
+              <Loader2 className="h-8 w-8 animate-spin text-primary" />
               <p className="text-sm text-muted-foreground">
                 Deine Authentifizierung wird verarbeitet...
               </p>
@@ -139,8 +139,8 @@ export default function AuthCallbackPage() {
           {state === 'password-reset' && (
             <form onSubmit={handlePasswordReset} className="space-y-4">
               <div className="flex justify-center mb-2">
-                <div className="h-10 w-10 rounded-full bg-teal-100 flex items-center justify-center">
-                  <KeyRound className="h-5 w-5 text-teal-600" />
+                <div className="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center">
+                  <KeyRound className="h-5 w-5 text-blue-600" />
                 </div>
               </div>
               <p className="text-sm text-muted-foreground text-center">
@@ -173,7 +173,7 @@ export default function AuthCallbackPage() {
               <Button
                 type="submit"
                 disabled={updating}
-                className="w-full bg-gradient-to-r from-teal-500 to-emerald-600 hover:from-teal-600 hover:to-emerald-700 text-white border-0"
+                className="w-full btn-brand"
               >
                 {updating ? (
                   <Loader2 className="h-4 w-4 animate-spin" />
@@ -222,7 +222,7 @@ export default function AuthCallbackPage() {
                 </Button>
                 <Button
                   onClick={() => window.location.reload()}
-                  className="bg-gradient-to-r from-teal-500 to-emerald-600 hover:from-teal-600 hover:to-emerald-700 text-white border-0"
+                  className="btn-brand"
                 >
                   Erneut versuchen
                 </Button>

@@ -2,12 +2,7 @@ import { Outlet, useLocation } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Header } from './Header'
 import { Sidebar } from './Sidebar'
-
-const pageVariants = {
-  initial: { opacity: 0, y: 12 },
-  animate: { opacity: 1, y: 0 },
-  exit: { opacity: 0, y: -8 },
-}
+import { pageVariants, pageTransition } from '@/lib/animations'
 
 export function AppShell() {
   const location = useLocation()
@@ -26,7 +21,7 @@ export function AppShell() {
                 initial="initial"
                 animate="animate"
                 exit="exit"
-                transition={{ duration: 0.2, ease: 'easeOut' }}
+                transition={pageTransition}
               >
                 <Outlet />
               </motion.div>

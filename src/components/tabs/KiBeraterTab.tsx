@@ -63,7 +63,7 @@ function KpiMiniRow({ result, scenarioResult }: { result: CalculationResult; sce
       icon: Percent,
       label: 'EK-Rendite',
       value: `${display.kpis.eigenkapitalrendite.toFixed(1)}%`,
-      color: display.kpis.eigenkapitalrendite >= 0 ? 'text-teal-600' : 'text-red-500',
+      color: display.kpis.eigenkapitalrendite >= 0 ? 'text-blue-600' : 'text-red-500',
     },
     {
       icon: Activity,
@@ -75,7 +75,7 @@ function KpiMiniRow({ result, scenarioResult }: { result: CalculationResult; sce
       icon: BarChart3,
       label: 'Netto-Rendite',
       value: `${display.kpis.nettomietrendite.toFixed(1)}%`,
-      color: 'text-teal-600',
+      color: 'text-blue-600',
     },
   ]
 

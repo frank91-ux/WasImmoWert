@@ -58,7 +58,7 @@ export function ChartCard({ title, subtitle, children, className, timeRange, onT
                   onClick={() => onTimeRangeChange(opt.value)}
                   className={`px-2 py-0.5 text-[10px] font-medium rounded transition-all ${
                     timeRange === opt.value
-                      ? 'bg-white dark:bg-card text-teal-700 dark:text-teal-300 shadow-sm'
+                      ? 'bg-white dark:bg-card text-primary shadow-sm'
                       : 'text-muted-foreground hover:text-foreground'
                   }`}
                 >

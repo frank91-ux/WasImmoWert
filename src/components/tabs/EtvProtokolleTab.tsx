@@ -204,7 +204,7 @@ function ProtokollView({ p, onRemove }: { p: EtvProtokoll; onRemove: () => void 
         <div className="flex items-start justify-between gap-4">
           <button className="flex-1 text-left" onClick={() => setExpanded(!expanded)}>
             <CardTitle className="text-base flex items-center gap-2">
-              <FileText className="h-4 w-4 text-teal-600" />
+              <FileText className="h-4 w-4 text-blue-600" />
               {p.dateiName}
             </CardTitle>
             <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground mt-1">
@@ -234,11 +234,11 @@ function ProtokollView({ p, onRemove }: { p: EtvProtokoll; onRemove: () => void 
       {expanded && (
         <CardContent className="space-y-4">
           {/* Zusammenfassung */}
-          <div className="bg-teal-50/60 border border-teal-200 rounded-lg p-3">
-            <p className="text-xs font-semibold text-teal-700 mb-1 flex items-center gap-1">
+          <div className="bg-blue-50/60 border border-blue-200 rounded-lg p-3">
+            <p className="text-xs font-semibold text-blue-700 mb-1 flex items-center gap-1">
               <Eye className="h-3.5 w-3.5" /> Zusammenfassung (Investoren-Sicht)
             </p>
-            <p className="text-sm text-teal-900">{p.zusammenfassung}</p>
+            <p className="text-sm text-blue-900">{p.zusammenfassung}</p>
           </div>
 
           {/* Warnungen */}
@@ -411,8 +411,8 @@ export function EtvProtokolleTab({ project }: Props) {
         className={`
           relative border-2 border-dashed rounded-xl p-8 text-center cursor-pointer transition-all
           ${dragOver
-            ? 'border-teal-500 bg-teal-50/50'
-            : 'border-muted-foreground/20 hover:border-teal-400 hover:bg-teal-50/30'}
+            ? 'border-blue-500 bg-blue-50/50'
+            : 'border-muted-foreground/20 hover:border-blue-400 hover:bg-blue-50/30'}
           ${isAnalysing ? 'pointer-events-none opacity-60' : ''}
         `}
       >
@@ -430,7 +430,7 @@ export function EtvProtokolleTab({ project }: Props) {
 
         {isAnalysing ? (
           <div className="flex flex-col items-center gap-3">
-            <Loader2 className="h-10 w-10 text-teal-600 animate-spin" />
+            <Loader2 className="h-10 w-10 text-blue-600 animate-spin" />
             <div>
               <p className="font-medium text-sm">Protokoll wird analysiert…</p>
               <p className="text-xs text-muted-foreground mt-1">

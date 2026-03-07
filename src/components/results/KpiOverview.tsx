@@ -20,6 +20,7 @@ import {
 } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import { GripVertical, AlertTriangle } from 'lucide-react'
+import { ModeToggle } from '@/components/shared/ModeToggle'
 import { berechneMarktvergleich } from '@/data/marktdaten'
 
 interface KpiOverviewProps {
@@ -278,6 +279,17 @@ export function KpiOverview({ result, nutzungsart, eigenkapital, gesamtkosten, p
       subtitle: markt.preisLevel === 'guenstig' ? 'unter Marktpreis' : markt.preisLevel === 'teuer' ? 'über Marktpreis' : 'im Marktdurchschnitt',
       example: `${eigenPreisProQm.toLocaleString('de-DE', { maximumFractionDigits: 0 })} €/m² vs. Ø ${markt.durchschnittKauf.toLocaleString('de-DE', { maximumFractionDigits: 0 })} €/m² Region`,
     }] as CardDef[] : []),
+    // Miete vs. Markt
+    ...(markt.verfuegbar && eigenMieteProQm > 0 ? [{
+      key: 'mietvergleich',
+      proOnly: false,
+      label: 'Miete vs. Markt',
+      value: `${markt.abweichungMieteProzent > 0 ? '+' : ''}${markt.abweichungMieteProzent.toFixed(0)}%`,
+      tooltip: 'mietvergleich',
+      trend: (markt.abweichungMieteProzent > 5 ? 'positive' : markt.abweichungMieteProzent < -10 ? 'negative' : 'neutral') as 'positive' | 'negative' | 'neutral',
+      subtitle: markt.abweichungMieteProzent > 5 ? 'über Marktmiete' : markt.abweichungMieteProzent < -10 ? 'unter Marktmiete' : 'im Marktdurchschnitt',
+      example: `${eigenMieteProQm.toFixed(2)} €/m² vs. Ø ${markt.durchschnittMiete.toFixed(2)} €/m² Region`,
+    }] as CardDef[] : []),
     // Both modes
     {
       key: 'vermoegenszuwachs',
@@ -328,7 +340,10 @@ export function KpiOverview({ result, nutzungsart, eigenkapital, gesamtkosten, p
 
   return (
     <div className="space-y-4">
-      <h3 className="text-lg font-semibold">Kennzahlen</h3>
+      <div className="flex items-center justify-between">
+        <h3 className="text-lg font-semibold">Kennzahlen</h3>
+        <ModeToggle />
+      </div>
 
       {/* C16: Warning banners */}
       {ekIsZero && (

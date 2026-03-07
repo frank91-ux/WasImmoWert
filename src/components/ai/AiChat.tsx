@@ -20,9 +20,9 @@ interface AiChatProps {
 function TypingIndicator() {
   return (
     <div className="flex gap-1.5 items-center">
-      <div className="w-2 h-2 rounded-full bg-teal-600 animate-bounce" style={{ animationDelay: '0ms' }} />
-      <div className="w-2 h-2 rounded-full bg-teal-600 animate-bounce" style={{ animationDelay: '150ms' }} />
-      <div className="w-2 h-2 rounded-full bg-teal-600 animate-bounce" style={{ animationDelay: '300ms' }} />
+      <div className="w-2 h-2 rounded-full bg-blue-600 animate-bounce" style={{ animationDelay: '0ms' }} />
+      <div className="w-2 h-2 rounded-full bg-blue-600 animate-bounce" style={{ animationDelay: '150ms' }} />
+      <div className="w-2 h-2 rounded-full bg-blue-600 animate-bounce" style={{ animationDelay: '300ms' }} />
     </div>
   )
 }
@@ -48,7 +48,7 @@ function RenderMarkdown({ text }: { text: string }) {
                 .filter((l) => l.trim())
                 .map((line, j) => (
                   <li key={j} className="flex gap-2 items-start">
-                    <span className="text-teal-500 mt-0.5 shrink-0">•</span>
+                    <span className="text-blue-500 mt-0.5 shrink-0">•</span>
                     <span>{renderInline(line.replace(/^[-•*]\s*/, ''))}</span>
                   </li>
                 ))}
@@ -65,7 +65,7 @@ function RenderMarkdown({ text }: { text: string }) {
                 .filter((l) => l.trim())
                 .map((line, j) => (
                   <li key={j} className="flex gap-2 items-start">
-                    <span className="text-teal-600 font-semibold shrink-0">{j + 1}.</span>
+                    <span className="text-blue-600 font-semibold shrink-0">{j + 1}.</span>
                     <span>{renderInline(line.replace(/^\d+[.)]\s*/, ''))}</span>
                   </li>
                 ))}
@@ -253,9 +253,9 @@ export function AiChat({ project, result, onParameterChange, onScenarioAdjustmen
     <Card className="h-full flex flex-col">
       <CardContent className="p-0 flex flex-col h-full min-h-0">
         {/* Header */}
-        <div className="border-b bg-gradient-to-r from-teal-50 to-emerald-50/50 dark:from-teal-950/30 dark:to-emerald-950/20 px-4 py-3 flex items-center justify-between shrink-0">
+        <div className="border-b bg-gradient-to-r from-blue-50 to-indigo-50/50 dark:from-blue-950/30 dark:to-indigo-950/20 px-4 py-3 flex items-center justify-between shrink-0">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-teal-500 to-emerald-600 flex items-center justify-center shrink-0">
+            <div className="w-8 h-8 rounded-full brand-gradient flex items-center justify-center shrink-0">
               <Bot className="h-5 w-5 text-white" />
             </div>
             <div>
@@ -270,7 +270,7 @@ export function AiChat({ project, result, onParameterChange, onScenarioAdjustmen
                 variant="ghost"
                 onClick={clearMessages}
                 title="Chat leeren"
-                className="h-7 w-7 text-muted-foreground hover:text-teal-600"
+                className="h-7 w-7 text-muted-foreground hover:text-blue-600"
               >
                 <Trash2 className="h-3.5 w-3.5" />
               </Button>
@@ -281,7 +281,7 @@ export function AiChat({ project, result, onParameterChange, onScenarioAdjustmen
                 variant="ghost"
                 onClick={() => { removeApiKey(); clearMessages(); setError(null) }}
                 title="API-Key ändern"
-                className="h-7 w-7 text-muted-foreground hover:text-teal-600"
+                className="h-7 w-7 text-muted-foreground hover:text-blue-600"
               >
                 <Key className="h-3.5 w-3.5" />
               </Button>
@@ -307,8 +307,8 @@ export function AiChat({ project, result, onParameterChange, onScenarioAdjustmen
         <div className="flex-1 overflow-y-auto p-4 space-y-4 min-h-0">
           {messages.length === 0 && !isLoading && (
             <div className="flex flex-col items-center justify-center h-full text-muted-foreground text-sm gap-3 py-8">
-              <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-teal-100 to-emerald-100 dark:from-teal-900/30 dark:to-emerald-900/30 flex items-center justify-center">
-                <Bot className="h-7 w-7 text-teal-600 dark:text-teal-400" />
+              <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-blue-100 to-indigo-100 dark:from-blue-900/30 dark:to-indigo-900/30 flex items-center justify-center">
+                <Bot className="h-7 w-7 text-blue-600 dark:text-blue-400" />
               </div>
               <div className="text-center">
                 <p className="font-medium text-foreground/70">Dein KI-Berater für Immobilien</p>
@@ -323,14 +323,14 @@ export function AiChat({ project, result, onParameterChange, onScenarioAdjustmen
               className={`flex gap-2.5 ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
             >
               {msg.role === 'assistant' && (
-                <div className="w-7 h-7 rounded-full bg-gradient-to-br from-teal-500 to-emerald-600 flex items-center justify-center shrink-0 mt-0.5">
+                <div className="w-7 h-7 rounded-full brand-gradient flex items-center justify-center shrink-0 mt-0.5">
                   <Bot className="h-4 w-4 text-white" />
                 </div>
               )}
               <div
                 className={`max-w-[85%] rounded-2xl px-4 py-3 text-sm leading-relaxed ${
                   msg.role === 'user'
-                    ? 'bg-teal-600 text-white rounded-br-md'
+                    ? 'bg-blue-600 text-white rounded-br-md'
                     : 'bg-muted/60 text-foreground rounded-bl-md border'
                 }`}
               >
@@ -342,8 +342,8 @@ export function AiChat({ project, result, onParameterChange, onScenarioAdjustmen
                 {msg.inlineCalculation && msg.inlineCalculation.entries.length > 0 && (
                   <div className="mt-3 bg-white dark:bg-card rounded-xl p-3 border">
                     <div className="flex items-center gap-1.5 mb-2">
-                      <Calculator className="h-3.5 w-3.5 text-teal-600" />
-                      <span className="font-semibold text-xs text-teal-700 dark:text-teal-300">{msg.inlineCalculation.title}</span>
+                      <Calculator className="h-3.5 w-3.5 text-blue-600" />
+                      <span className="font-semibold text-xs text-blue-700 dark:text-blue-300">{msg.inlineCalculation.title}</span>
                     </div>
                     <div className="space-y-1.5">
                       {msg.inlineCalculation.entries.map((entry, idx) => (
@@ -367,8 +367,8 @@ export function AiChat({ project, result, onParameterChange, onScenarioAdjustmen
                 )}
               </div>
               {msg.role === 'user' && (
-                <div className="w-7 h-7 rounded-full bg-teal-100 dark:bg-teal-900/40 flex items-center justify-center shrink-0 mt-0.5">
-                  <User className="h-4 w-4 text-teal-600 dark:text-teal-400" />
+                <div className="w-7 h-7 rounded-full bg-blue-100 dark:bg-blue-900/40 flex items-center justify-center shrink-0 mt-0.5">
+                  <User className="h-4 w-4 text-blue-600 dark:text-blue-400" />
                 </div>
               )}
             </div>
@@ -376,7 +376,7 @@ export function AiChat({ project, result, onParameterChange, onScenarioAdjustmen
 
           {isLoading && (
             <div className="flex gap-2.5">
-              <div className="w-7 h-7 rounded-full bg-gradient-to-br from-teal-500 to-emerald-600 flex items-center justify-center shrink-0">
+              <div className="w-7 h-7 rounded-full brand-gradient flex items-center justify-center shrink-0">
                 <Bot className="h-4 w-4 text-white" />
               </div>
               <div className="bg-muted/60 border rounded-2xl rounded-bl-md px-4 py-3">
@@ -407,14 +407,14 @@ export function AiChat({ project, result, onParameterChange, onScenarioAdjustmen
               placeholder="Frage stellen..."
               disabled={isLoading || !hasAiChat}
               className="flex-1 px-3 py-2.5 text-sm rounded-xl border bg-background
-                focus:outline-none focus:ring-2 focus:ring-teal-500/50
+                focus:outline-none focus:ring-2 focus:ring-blue-500/50
                 disabled:opacity-50 disabled:cursor-not-allowed"
             />
             <Button
               size="icon"
               onClick={() => handleSend(input)}
               disabled={!input.trim() || isLoading || !hasAiChat}
-              className="shrink-0 h-10 w-10 rounded-xl bg-gradient-to-br from-teal-500 to-emerald-600 hover:from-teal-600 hover:to-emerald-700"
+              className="shrink-0 h-10 w-10 rounded-xl btn-brand"
             >
               {isLoading ? (
                 <Loader2 className="h-4 w-4 animate-spin" />

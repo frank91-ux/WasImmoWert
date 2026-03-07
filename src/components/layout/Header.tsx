@@ -72,7 +72,7 @@ export function Header() {
 
           {/* Logo for mobile */}
           <Link to="/" className="lg:hidden flex items-center gap-2 font-bold text-lg">
-            <div className="h-7 w-7 rounded-md bg-gradient-to-br from-teal-500 to-emerald-600 flex items-center justify-center">
+            <div className="h-7 w-7 rounded-md brand-gradient flex items-center justify-center">
               <Building2 className="h-4 w-4 text-white" />
             </div>
           </Link>
@@ -121,7 +121,7 @@ export function Header() {
               className="flex items-center gap-2 p-1 rounded-lg hover:bg-muted transition-colors"
               onClick={() => setAccountMenuOpen(!accountMenuOpen)}
             >
-              <div className="h-8 w-8 rounded-full bg-gradient-to-br from-emerald-400 to-teal-600 flex items-center justify-center text-xs font-bold text-white">
+              <div className="h-8 w-8 rounded-full brand-gradient flex items-center justify-center text-xs font-bold text-white">
                 {initials}
               </div>
               {authMode === 'authenticated' && email && (
@@ -205,7 +205,7 @@ export function Header() {
             <GitCompare className="h-4 w-4" /> Vergleichen
           </button>
           <button
-            className="flex items-center gap-2 w-full rounded-lg px-3 py-2.5 text-sm font-medium bg-gradient-to-r from-teal-500 to-emerald-600 text-white"
+            className="flex items-center gap-2 w-full rounded-lg px-3 py-2.5 text-sm font-medium btn-brand"
             onClick={handleNewProject}
           >
             <Plus className="h-4 w-4" /> Neues Projekt

@@ -1,4 +1,6 @@
 import { Check, Star, Zap, Crown } from 'lucide-react'
+import { motion } from 'framer-motion'
+import { staggerContainer, staggerItem } from '@/lib/animations'
 
 interface PricingTier {
   name: string
@@ -76,16 +78,23 @@ export function PricingSection({ onSelectPlan }: PricingSectionProps) {
           </p>
         </div>
 
-        <div className="grid md:grid-cols-3 gap-6">
+        <motion.div
+          className="grid md:grid-cols-3 gap-6"
+          variants={staggerContainer}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, margin: '-50px' }}
+        >
           {tiers.map((tier) => {
             const Icon = tier.icon
             const planKey = tier.name.toLowerCase() as 'free' | 'pro' | 'lifetime'
             return (
-              <div
+              <motion.div
                 key={tier.name}
-                className={`relative rounded-2xl border p-6 flex flex-col ${
+                variants={staggerItem}
+                className={`relative rounded-2xl border p-6 flex flex-col hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ${
                   tier.popular
-                    ? 'border-teal-500 shadow-lg shadow-teal-500/10 scale-[1.02]'
+                    ? 'border-blue-500 shadow-lg shadow-blue-500/10 scale-[1.02]'
                     : 'border-border'
                 } bg-card`}
               >
@@ -98,7 +107,7 @@ export function PricingSection({ onSelectPlan }: PricingSectionProps) {
                 <div className="flex items-center gap-3 mb-4">
                   <div className={`h-10 w-10 rounded-xl flex items-center justify-center ${
                     tier.popular
-                      ? 'bg-gradient-to-br from-teal-500 to-emerald-500'
+                      ? 'brand-gradient'
                       : 'bg-muted'
                   }`}>
                     <Icon className={`h-5 w-5 ${tier.popular ? 'text-white' : 'text-muted-foreground'}`} />
@@ -116,7 +125,7 @@ export function PricingSection({ onSelectPlan }: PricingSectionProps) {
                 <ul className="space-y-3 flex-1 mb-6">
                   {tier.features.map((feature) => (
                     <li key={feature} className="flex items-start gap-2 text-sm">
-                      <Check className="h-4 w-4 text-teal-500 mt-0.5 shrink-0" />
+                      <Check className="h-4 w-4 text-blue-500 mt-0.5 shrink-0" />
                       <span>{feature}</span>
                     </li>
                   ))}
@@ -124,18 +133,18 @@ export function PricingSection({ onSelectPlan }: PricingSectionProps) {
 
                 <button
                   onClick={() => onSelectPlan?.(planKey)}
-                  className={`w-full py-2.5 rounded-xl font-semibold text-sm transition-all ${
+                  className={`w-full py-2.5 rounded-xl font-semibold text-sm transition-all cursor-pointer ${
                     tier.popular
                       ? 'btn-brand'
-                      : 'border border-border hover:border-teal-300 hover:bg-teal-50 dark:hover:bg-teal-950/20'
+                      : 'border border-border hover:border-blue-300 hover:bg-blue-50 dark:hover:bg-blue-950/20'
                   }`}
                 >
                   {tier.cta}
                 </button>
-              </div>
+              </motion.div>
             )
           })}
-        </div>
+        </motion.div>
       </div>
     </section>
   )

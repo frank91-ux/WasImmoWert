@@ -39,7 +39,7 @@ function ConfirmationDialog({
             {isDangerous ? (
               <AlertCircle className="h-5 w-5 text-red-500 mt-0.5 flex-shrink-0" />
             ) : (
-              <CheckCircle className="h-5 w-5 text-teal-500 mt-0.5 flex-shrink-0" />
+              <CheckCircle className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
             )}
             <CardTitle className="text-lg">{title}</CardTitle>
           </div>
@@ -58,7 +58,7 @@ function ConfirmationDialog({
               onClick={onConfirm}
               className={isDangerous
                 ? 'flex-1 sm:flex-none bg-red-500 hover:bg-red-600 text-white'
-                : 'flex-1 sm:flex-none bg-gradient-to-r from-teal-500 to-emerald-600 hover:from-teal-600 hover:to-emerald-700 text-white'
+                : 'flex-1 sm:flex-none btn-brand'
               }
             >
               {confirmText}
@@ -80,7 +80,7 @@ function Avatar({ name, email }: { name: string; email: string }) {
     .slice(0, 2)
 
   return (
-    <div className="h-16 w-16 rounded-full bg-gradient-to-br from-teal-500 to-emerald-600 flex items-center justify-center text-white font-bold text-lg shadow-md">
+    <div className="h-16 w-16 rounded-full brand-gradient flex items-center justify-center text-white font-bold text-lg shadow-md">
       {initials}
     </div>
   )
@@ -90,7 +90,7 @@ function Avatar({ name, email }: { name: string; email: string }) {
 function PlanBadge({ tier }: { tier: 'free' | 'pro' | 'lifetime' }) {
   const badgeConfig = {
     free: { label: 'Kostenlos', className: 'bg-gray-100 text-gray-800' },
-    pro: { label: 'Pro', className: 'bg-teal-100 text-teal-800' },
+    pro: { label: 'Pro', className: 'bg-blue-100 text-blue-800' },
     lifetime: { label: 'Lifetime', className: 'bg-amber-100 text-amber-800' },
   }
 
@@ -128,7 +128,7 @@ function FeatureList({ tier }: { tier: 'free' | 'pro' | 'lifetime' }) {
     <ul className="space-y-2">
       {list.map((feature, idx) => (
         <li key={idx} className="flex items-center gap-2 text-sm text-foreground/80">
-          <div className="h-1.5 w-1.5 rounded-full bg-gradient-to-r from-teal-500 to-emerald-600" />
+          <div className="h-1.5 w-1.5 rounded-full bg-gradient-to-r from-blue-500 to-indigo-600" />
           {feature}
         </li>
       ))}
@@ -265,7 +265,7 @@ export default function AccountPage() {
             <div className="flex gap-2 pt-2">
               <Button
                 onClick={handleChangePlan}
-                className="flex-1 bg-gradient-to-r from-teal-500 to-emerald-600 hover:from-teal-600 hover:to-emerald-700 text-white"
+                className="flex-1 btn-brand"
               >
                 Plan wechseln
               </Button>

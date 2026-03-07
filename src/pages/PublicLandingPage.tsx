@@ -135,7 +135,7 @@ export function PublicLandingPage() {
       <header className="sticky top-0 z-40 border-b bg-background/95 backdrop-blur">
         <div className="flex h-14 items-center justify-between px-4 max-w-4xl mx-auto">
           <div className="flex items-center gap-2.5 font-bold text-lg">
-            <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-teal-500 to-emerald-600 flex items-center justify-center">
+            <div className="h-8 w-8 rounded-lg brand-gradient flex items-center justify-center">
               <Building2 className="h-4 w-4 text-white" />
             </div>
             <span>Was-Immo-Wert</span>

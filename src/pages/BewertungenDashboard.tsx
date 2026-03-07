@@ -14,6 +14,7 @@ import {
   TrendingUp, DollarSign, BarChart3, MapPin, ArrowUpRight, ArrowDownRight,
 } from 'lucide-react'
 import { formatEur, formatPercent } from '@/lib/format'
+import { berechneMarktvergleich } from '@/data/marktdaten'
 import { useCalculation } from '@/hooks/useCalculation'
 import type { Project } from '@/calc/types'
 
@@ -54,9 +55,16 @@ function ProjectCard({ project, selected, onToggle }: { project: Project; select
   const { deleteProject, duplicateProject } = useProjectStore()
   const result = useCalculation(project)
 
+  const markt = useMemo(() => {
+    if (!project.wohnflaeche || project.wohnflaeche <= 0) return undefined
+    const preisProQm = project.kaufpreis / project.wohnflaeche
+    const mieteProQm = project.monatsmieteKalt / project.wohnflaeche
+    return berechneMarktvergleich(preisProQm, mieteProQm, project.lat, project.lng)
+  }, [project.kaufpreis, project.wohnflaeche, project.monatsmieteKalt, project.lat, project.lng])
+
   const rentabilitaet = useMemo(
-    () => result ? calculateRentabilitaet(result.kpis, project.nutzungsart, project) : null,
-    [result, project.nutzungsart, project]
+    () => result ? calculateRentabilitaet(result.kpis, project.nutzungsart, project, markt) : null,
+    [result, project.nutzungsart, project, markt]
   )
 
   if (!result || !rentabilitaet) return null
@@ -227,7 +235,7 @@ export function BewertungenDashboard() {
         </div>
         <Button
           onClick={() => navigate('/projects/new')}
-          className="bg-gradient-to-r from-teal-500 to-emerald-600 hover:from-teal-600 hover:to-emerald-700 text-white border-0"
+          className="btn-brand"
         >
           <Plus className="h-4 w-4" />
           Neue Bewertung
@@ -239,14 +247,14 @@ export function BewertungenDashboard() {
         <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
           <KpiCard
             icon={Search}
-            iconGradient="bg-gradient-to-br from-teal-400 to-teal-600"
+            iconGradient="brand-gradient"
             value={String(aggregateKpis.count)}
             label="Objekte"
             sublabel="in Bewertung"
           />
           <KpiCard
             icon={TrendingUp}
-            iconGradient="bg-gradient-to-br from-emerald-400 to-emerald-600"
+            iconGradient="bg-gradient-to-br from-blue-400 to-blue-600"
             value={formatPercent(aggregateKpis.avgRendite)}
             label="Ø Rendite"
             sublabel="Bruttomietrendite"
@@ -277,7 +285,7 @@ export function BewertungenDashboard() {
             <p className="text-muted-foreground text-sm text-center max-w-md mb-6">
               Erstellen Sie eine neue Bewertung, um eine Immobilie zu analysieren.
             </p>
-            <Button onClick={() => navigate('/projects/new')} className="bg-gradient-to-r from-teal-500 to-emerald-600 hover:from-teal-600 hover:to-emerald-700 text-white border-0">
+            <Button onClick={() => navigate('/projects/new')} className="btn-brand">
               <Plus className="h-4 w-4" />
               Erste Bewertung starten
             </Button>

@@ -75,16 +75,16 @@ export function TaxExampleCalculation({ tax, rental, operatingCosts }: TaxExampl
                   key={line.label}
                   className={[
                     line.bold ? 'border-t font-semibold' : '',
-                    line.highlight ? 'bg-teal-50/50 dark:bg-teal-950/20' : '',
+                    line.highlight ? 'bg-blue-50/50 dark:bg-blue-950/20' : '',
                   ].join(' ')}
                 >
                   <td className={`py-2 ${line.indent ? 'pl-4 text-xs text-muted-foreground' : ''}`}>
                     {line.label}
                   </td>
-                  <td className={`py-2 text-right tabular-nums ${line.value < 0 ? 'text-destructive' : ''} ${line.highlight ? 'text-teal-700 dark:text-teal-400 font-bold' : ''}`}>
+                  <td className={`py-2 text-right tabular-nums ${line.value < 0 ? 'text-destructive' : ''} ${line.highlight ? 'text-blue-700 dark:text-blue-400 font-bold' : ''}`}>
                     {formatEur(line.value)}
                   </td>
-                  <td className={`py-2 text-right tabular-nums text-muted-foreground ${line.indent ? 'text-xs' : ''} ${line.highlight ? 'text-teal-600 dark:text-teal-400 font-medium' : ''}`}>
+                  <td className={`py-2 text-right tabular-nums text-muted-foreground ${line.indent ? 'text-xs' : ''} ${line.highlight ? 'text-blue-600 dark:text-blue-400 font-medium' : ''}`}>
                     {formatEur(line.value / 12)}
                   </td>
                 </tr>

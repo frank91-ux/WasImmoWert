@@ -412,7 +412,7 @@ export function MarktvergleichTab({ project, result }: MarktvergleichTabProps) {
             {/* Toggle all / nearby */}
             {nearbyStadtteile.length < allSorted.length && (
               <button
-                className="mt-3 text-xs text-teal-600 hover:text-teal-700 font-medium transition-colors"
+                className="mt-3 text-xs text-blue-600 hover:text-blue-700 font-medium transition-colors"
                 onClick={() => setShowAllStadtteile(!showAllStadtteile)}
               >
                 {showAllStadtteile

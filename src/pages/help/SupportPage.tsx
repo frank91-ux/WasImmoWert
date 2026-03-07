@@ -75,14 +75,14 @@ export default function SupportPage() {
 
         {categories.map(category => (
           <div key={category} className="mb-8">
-            <h2 className="text-2xl font-semibold text-teal-700 mb-4">{category}</h2>
+            <h2 className="text-2xl font-semibold text-blue-700 mb-4">{category}</h2>
             <div className="space-y-3">
               {faqItems
                 .filter(item => item.category === category)
                 .map(item => (
                   <div
                     key={item.id}
-                    className="border border-gray-200 rounded-lg overflow-hidden hover:border-teal-300 transition-colors"
+                    className="border border-gray-200 rounded-lg overflow-hidden hover:border-blue-300 transition-colors"
                   >
                     <button
                       onClick={() => toggleExpand(item.id)}
@@ -90,7 +90,7 @@ export default function SupportPage() {
                     >
                       <span className="font-medium text-gray-900">{item.question}</span>
                       <ChevronDown
-                        className={`w-5 h-5 text-teal-600 transition-transform duration-200 ${
+                        className={`w-5 h-5 text-blue-600 transition-transform duration-200 ${
                           expandedId === item.id ? 'rotate-180' : ''
                         }`}
                       />
@@ -106,11 +106,11 @@ export default function SupportPage() {
           </div>
         ))}
 
-        <div className="bg-teal-50 border border-teal-200 rounded-lg p-6 mt-12 mb-12">
-          <p className="text-teal-900 font-medium mb-2">Noch weitere Fragen?</p>
-          <p className="text-teal-700 text-sm">
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 mt-12 mb-12">
+          <p className="text-blue-900 font-medium mb-2">Noch weitere Fragen?</p>
+          <p className="text-blue-700 text-sm">
             Kontaktieren Sie unser Support-Team unter{' '}
-            <Link to="/help/kontakt" className="underline font-semibold hover:text-teal-800">
+            <Link to="/help/kontakt" className="underline font-semibold hover:text-blue-800">
               Kontakt
             </Link>
           </p>
@@ -119,7 +119,7 @@ export default function SupportPage() {
         <div className="pt-8 border-t border-gray-200">
           <Link
             to="/"
-            className="inline-flex items-center gap-2 text-teal-600 hover:text-teal-700 font-medium"
+            className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-700 font-medium"
           >
             <ArrowLeft className="w-4 h-4" />
             Zur Startseite

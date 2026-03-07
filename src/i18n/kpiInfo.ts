@@ -310,6 +310,28 @@ export const KPI_INFO: Record<string, KpiInfoData> = {
         + 'Liegt er deutlich darüber, sollten Sie prüfen, ob die Qualität den Aufpreis rechtfertigt.',
     },
   },
+  mietvergleich: {
+    label: 'Miete vs. Markt',
+    description:
+      'Der Mietvergleich zeigt, wie Ihre Kaltmiete pro Quadratmeter im Vergleich zum '
+      + 'regionalen Durchschnitt liegt. Eine höhere Miete als der Markt bedeutet höhere '
+      + 'Einnahmen, kann aber auch Leerstandsrisiko erhöhen. Eine niedrigere Miete bietet '
+      + 'Steigerungspotenzial.',
+    formula: '(Eigene Miete/m² − Ø Regionsmiete/m²) ÷ Ø Regionsmiete/m² × 100',
+    interpretation: {
+      gut: 'Über +5 %: Ihre Miete liegt über dem Markt — höhere Einnahmen.',
+      mittel: '−10 % bis +5 %: Im Marktdurchschnitt — angemessene Miete.',
+      schlecht: 'Unter −10 %: Deutlich unter Markt — prüfen Sie Mieterhöhungspotenzial.',
+    },
+    metaphor: {
+      title: 'Wie ein Gehaltsvergleich',
+      text: 'Stellen Sie sich vor, Sie vergleichen Ihr Gehalt (die Miete) mit dem '
+        + 'Branchendurchschnitt. Liegt Ihre Miete über dem Markt, verdienen Sie '
+        + 'überdurchschnittlich — das ist gut für den Cashflow, birgt aber das Risiko, '
+        + 'dass ein neuer Mieter weniger zahlen möchte. Liegt sie darunter, haben Sie '
+        + 'Potenzial nach oben — wie eine Gehaltsverhandlung, die noch aussteht.',
+    },
+  },
   steuerEffekt: {
     label: 'Steuerliche Auswirkung',
     description:

@@ -1,10 +1,10 @@
 /* ─── Centralized Chart Theme ─── */
 
 export const CHART_COLORS = {
-  primary: '#0d9488',     // teal-600
-  secondary: '#10b981',   // emerald-500
-  tertiary: '#14b8a6',    // teal-500
-  quaternary: '#059669',  // emerald-600
+  primary: '#1e3a5f',     // navy – trust
+  secondary: '#2563eb',   // blue – akzent
+  tertiary: '#0d9488',    // teal – CTA
+  quaternary: '#10b981',  // emerald – sekundär
   positive: '#10b981',    // grün für Gewinne
   negative: '#ef4444',    // rot für Verluste
   warning: '#f59e0b',     // amber für Warnungen
@@ -13,26 +13,26 @@ export const CHART_COLORS = {
 
   // Palette für Pie-Charts / Multi-Series
   palette: [
+    '#1e3a5f', // navy
+    '#2563eb', // blue-600
     '#0d9488', // teal-600
     '#10b981', // emerald-500
-    '#14b8a6', // teal-500
     '#f59e0b', // amber-500
-    '#6366f1', // Kontrast-Akzent
     '#8b5cf6', // violet-500
     '#ec4899', // pink-500
     '#06b6d4', // cyan-500
   ],
 
-  // Teal-only Palette für zusammengehörige Daten
-  tealPalette: [
-    '#134e4a', // teal-900
-    '#115e59', // teal-800
-    '#0f766e', // teal-700
-    '#0d9488', // teal-600
-    '#14b8a6', // teal-500
-    '#2dd4bf', // teal-400
-    '#5eead4', // teal-300
-    '#99f6e4', // teal-200
+  // Navy-Blue Palette für zusammengehörige Daten
+  navyPalette: [
+    '#0f172a', // slate-900
+    '#1e293b', // slate-800
+    '#1e3a5f', // navy
+    '#1d4ed8', // blue-700
+    '#2563eb', // blue-600
+    '#3b82f6', // blue-500
+    '#60a5fa', // blue-400
+    '#93c5fd', // blue-300
   ],
 }
 
@@ -61,7 +61,7 @@ export const GRID_STYLE = {
 
 export const BAR_RADIUS: [number, number, number, number] = [4, 4, 0, 0]
 
-export const ANIMATION_DURATION = 800
+export const ANIMATION_DURATION = 1200
 
 export const LEGEND_STYLE = {
   fontSize: '0.75rem',

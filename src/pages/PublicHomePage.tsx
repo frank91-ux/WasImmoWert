@@ -215,7 +215,7 @@ export default function PublicHomePage() {
             <button onClick={() => scrollTo('preise')} className="text-muted-foreground hover:text-foreground transition-colors">Preise</button>
             <button onClick={() => scrollTo('faq')} className="text-muted-foreground hover:text-foreground transition-colors">FAQ</button>
             {isAuthenticated() ? (
-              <button onClick={() => navigate('/projects')} className="text-teal-600 font-semibold">Zum Dashboard</button>
+              <button onClick={() => navigate('/projects')} className="text-primary font-semibold">Zum Dashboard</button>
             ) : (
               <button onClick={() => setLoginOpen(true)} className="text-muted-foreground hover:text-foreground transition-colors">Anmelden</button>
             )}
@@ -253,9 +253,9 @@ export default function PublicHomePage() {
             Professionelle Steuer-Simulation und volle Transparenz mit der Pro-Version.
           </p>
           <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-sm text-muted-foreground mb-8">
-            <span className="flex items-center gap-1.5"><Zap className="h-4 w-4 text-teal-500" /> Sofort & kostenlos</span>
-            <span className="flex items-center gap-1.5"><Calculator className="h-4 w-4 text-teal-500" /> §32a EStG Steuerberechnung</span>
-            <span className="flex items-center gap-1.5"><SlidersHorizontal className="h-4 w-4 text-teal-500" /> Interaktive Regler</span>
+            <span className="flex items-center gap-1.5"><Zap className="h-4 w-4 text-blue-500" /> Sofort & kostenlos</span>
+            <span className="flex items-center gap-1.5"><Calculator className="h-4 w-4 text-blue-500" /> §32a EStG Steuerberechnung</span>
+            <span className="flex items-center gap-1.5"><SlidersHorizontal className="h-4 w-4 text-blue-500" /> Interaktive Regler</span>
           </div>
         </div>
       </section>
@@ -284,7 +284,7 @@ export default function PublicHomePage() {
                 type="number"
                 value={form.wohnflaeche}
                 onChange={(e) => setForm({ ...form, wohnflaeche: +e.target.value })}
-                className="w-full rounded-lg border bg-background px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
+                className="w-full rounded-lg border bg-background px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
             <div>
@@ -295,7 +295,7 @@ export default function PublicHomePage() {
                 type="number"
                 value={form.baujahr}
                 onChange={(e) => setForm({ ...form, baujahr: +e.target.value })}
-                className="w-full rounded-lg border bg-background px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
+                className="w-full rounded-lg border bg-background px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
           </div>
@@ -306,7 +306,7 @@ export default function PublicHomePage() {
               <select
                 value={form.bundesland}
                 onChange={(e) => setForm({ ...form, bundesland: e.target.value as Bundesland })}
-                className="w-full rounded-lg border bg-background px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
+                className="w-full rounded-lg border bg-background px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 {BUNDESLAENDER.map((b) => (
                   <option key={b.value} value={b.value}>{b.label}</option>
@@ -319,7 +319,7 @@ export default function PublicHomePage() {
                 type="number"
                 value={form.kaufpreis}
                 onChange={(e) => setForm({ ...form, kaufpreis: +e.target.value })}
-                className="w-full rounded-lg border bg-background px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
+                className="w-full rounded-lg border bg-background px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
             <div>
@@ -328,7 +328,7 @@ export default function PublicHomePage() {
                 type="number"
                 value={form.kaltmiete}
                 onChange={(e) => setForm({ ...form, kaltmiete: +e.target.value })}
-                className="w-full rounded-lg border bg-background px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
+                className="w-full rounded-lg border bg-background px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
           </div>
@@ -352,7 +352,7 @@ export default function PublicHomePage() {
                   type="number"
                   value={form.eigenkapital}
                   onChange={(e) => setForm({ ...form, eigenkapital: +e.target.value })}
-                  className="w-full rounded-lg border bg-background px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
+                  className="w-full rounded-lg border bg-background px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
               <div>
@@ -364,7 +364,7 @@ export default function PublicHomePage() {
                   step={0.1}
                   min={0}
                   max={15}
-                  className="w-full rounded-lg border bg-background px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
+                  className="w-full rounded-lg border bg-background px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
               <div>
@@ -376,7 +376,7 @@ export default function PublicHomePage() {
                   step={0.1}
                   min={0}
                   max={15}
-                  className="w-full rounded-lg border bg-background px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
+                  className="w-full rounded-lg border bg-background px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
               <div>
@@ -388,7 +388,7 @@ export default function PublicHomePage() {
                   step={0.01}
                   min={0}
                   max={10}
-                  className="w-full rounded-lg border bg-background px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
+                  className="w-full rounded-lg border bg-background px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
             </div>
@@ -400,9 +400,9 @@ export default function PublicHomePage() {
 
           {/* Trust Badges */}
           <div className="flex flex-wrap items-center justify-center gap-4 mt-4 text-xs text-muted-foreground">
-            <span className="flex items-center gap-1"><Shield className="h-3.5 w-3.5 text-teal-500" /> DSGVO-konform</span>
-            <span className="flex items-center gap-1"><CreditCard className="h-3.5 w-3.5 text-teal-500" /> Keine Kreditkarte</span>
-            <span className="flex items-center gap-1"><Clock className="h-3.5 w-3.5 text-teal-500" /> 60 Sekunden</span>
+            <span className="flex items-center gap-1"><Shield className="h-3.5 w-3.5 text-blue-500" /> DSGVO-konform</span>
+            <span className="flex items-center gap-1"><CreditCard className="h-3.5 w-3.5 text-blue-500" /> Keine Kreditkarte</span>
+            <span className="flex items-center gap-1"><Clock className="h-3.5 w-3.5 text-blue-500" /> 60 Sekunden</span>
           </div>
         </div>
       </section>
@@ -483,19 +483,19 @@ export default function PublicHomePage() {
         <div className="max-w-4xl mx-auto grid sm:grid-cols-3 gap-6 text-center">
           <div>
             <p className="text-2xl font-bold text-foreground flex items-center justify-center gap-2">
-              <Clock className="h-5 w-5 text-teal-500" /> 60 Sekunden
+              <Clock className="h-5 w-5 text-blue-500" /> 60 Sekunden
             </p>
             <p className="text-sm text-muted-foreground">bis zur Bewertung</p>
           </div>
           <div>
             <p className="text-2xl font-bold text-foreground flex items-center justify-center gap-2">
-              <BarChart3 className="h-5 w-5 text-teal-500" /> Marktwert + Cashflow
+              <BarChart3 className="h-5 w-5 text-blue-500" /> Marktwert + Cashflow
             </p>
             <p className="text-sm text-muted-foreground">in einem Report</p>
           </div>
           <div>
             <p className="text-2xl font-bold text-foreground flex items-center justify-center gap-2">
-              <Building2 className="h-5 w-5 text-teal-500" /> Klare Regler
+              <Building2 className="h-5 w-5 text-blue-500" /> Klare Regler
             </p>
             <p className="text-sm text-muted-foreground">& Szenarien</p>
           </div>
@@ -516,7 +516,7 @@ export default function PublicHomePage() {
             { icon: Sparkles, title: 'KI-Berater', desc: 'Frage den KI-Berater nach Optimierungstipps, Szenarien oder Steuerstrategien für dein Objekt.' },
           ].map((item) => (
             <div key={item.title} className="bg-card border border-border rounded-xl p-5 hover:shadow-md transition-shadow">
-              <div className="h-10 w-10 rounded-lg bg-gradient-to-br from-teal-500 to-emerald-500 flex items-center justify-center mb-3">
+              <div className="h-10 w-10 rounded-lg brand-gradient flex items-center justify-center mb-3">
                 <item.icon className="h-5 w-5 text-white" />
               </div>
               <h3 className="font-semibold mb-1">{item.title}</h3>
@@ -530,15 +530,15 @@ export default function PublicHomePage() {
       <section className="py-10 px-4 sm:px-6 bg-muted/30 border-y border-border/50">
         <div className="max-w-4xl mx-auto grid sm:grid-cols-3 gap-6 text-center">
           <div>
-            <p className="text-3xl font-bold text-teal-600">16</p>
+            <p className="text-3xl font-bold text-primary">16</p>
             <p className="text-sm text-muted-foreground">Bundesländer mit regionalen Marktdaten</p>
           </div>
           <div>
-            <p className="text-3xl font-bold text-teal-600">30+ Jahre</p>
+            <p className="text-3xl font-bold text-primary">30+ Jahre</p>
             <p className="text-sm text-muted-foreground">Cashflow- & Vermögensprognose</p>
           </div>
           <div>
-            <p className="text-3xl font-bold text-teal-600">§32a EStG</p>
+            <p className="text-3xl font-bold text-primary">§32a EStG</p>
             <p className="text-sm text-muted-foreground">Deutsche Steuerberechnung auf Profi-Niveau</p>
           </div>
         </div>
@@ -557,7 +557,7 @@ export default function PublicHomePage() {
             { step: '3', title: 'Report erhalten', desc: 'Cashflow, Steuereffekte, Renditen – alles auf einen Blick mit klaren Empfehlungen.' },
           ].map((item) => (
             <div key={item.step} className="text-center">
-              <div className="h-12 w-12 rounded-full bg-gradient-to-br from-teal-500 to-emerald-500 text-white font-bold text-lg flex items-center justify-center mx-auto mb-4">
+              <div className="h-12 w-12 rounded-full brand-gradient text-white font-bold text-lg flex items-center justify-center mx-auto mb-4">
                 {item.step}
               </div>
               <h3 className="font-semibold text-lg mb-2">{item.title}</h3>
@@ -602,8 +602,8 @@ export default function PublicHomePage() {
                   </div>
                 ))}
               </div>
-              <div className="h-24 rounded-lg bg-gradient-to-r from-teal-500/10 to-emerald-500/10 border border-teal-200/30 flex items-center justify-center">
-                <BarChart3 className="h-8 w-8 text-teal-500/40" />
+              <div className="h-24 rounded-lg bg-gradient-to-r from-blue-500/10 to-indigo-500/10 border border-blue-200/30 flex items-center justify-center">
+                <BarChart3 className="h-8 w-8 text-blue-500/40" />
               </div>
             </div>
           </div>
@@ -621,8 +621,8 @@ export default function PublicHomePage() {
                 'Cashflow-Rechnung über 30 Jahre',
               ].map((item) => (
                 <li key={item} className="flex items-center gap-2 text-sm">
-                  <div className="h-5 w-5 rounded-full bg-teal-100 dark:bg-teal-900/30 flex items-center justify-center shrink-0">
-                    <svg className="h-3 w-3 text-teal-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                  <div className="h-5 w-5 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center shrink-0">
+                    <svg className="h-3 w-3 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
                       <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                     </svg>
                   </div>

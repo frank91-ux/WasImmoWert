@@ -30,11 +30,12 @@ const KontaktPage = lazy(() => import('@/pages/help/KontaktPage'))
 const SupportPage = lazy(() => import('@/pages/help/SupportPage'))
 const FeedbackPage = lazy(() => import('@/pages/help/FeedbackPage'))
 const PressePage = lazy(() => import('@/pages/help/PressePage'))
+const PricingPage = lazy(() => import('@/pages/PricingPage'))
 
 function PageLoader() {
   return (
     <div className="min-h-screen flex items-center justify-center">
-      <div className="h-8 w-8 animate-spin rounded-full border-4 border-teal-500 border-t-transparent" />
+      <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
     </div>
   )
 }
@@ -58,6 +59,9 @@ export default function App() {
           <Route path="/help/support" element={<SupportPage />} />
           <Route path="/help/feedback" element={<FeedbackPage />} />
           <Route path="/help/presse" element={<PressePage />} />
+
+          {/* Pricing page (public) */}
+          <Route path="/pricing" element={<PricingPage />} />
 
           {/* Auth callback (email confirmation, password reset, OAuth) */}
           <Route path="/auth/callback" element={<AuthCallbackPage />} />

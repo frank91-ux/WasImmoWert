@@ -87,7 +87,7 @@ export function LoginDialog({ open, onOpenChange, onSuccess, subtitle }: LoginDi
       <DialogContent onClose={() => onOpenChange(false)}>
         <DialogHeader>
           <div className="flex items-center gap-2 mb-2">
-            <div className="h-9 w-9 rounded-lg bg-gradient-to-br from-teal-500 to-emerald-600 flex items-center justify-center">
+            <div className="h-9 w-9 rounded-lg brand-gradient flex items-center justify-center">
               <Home className="h-4 w-4 text-white" />
             </div>
             <DialogTitle>WasImmoWert</DialogTitle>
@@ -220,7 +220,7 @@ export function LoginDialog({ open, onOpenChange, onSuccess, subtitle }: LoginDi
               />
             </div>
             <DialogFooter className="flex-col gap-2 sm:flex-col p-0 pt-2">
-              <Button type="submit" className="w-full bg-gradient-to-r from-teal-500 to-emerald-600 hover:from-teal-600 hover:to-emerald-700 text-white border-0" disabled={loading}>
+              <Button type="submit" className="w-full btn-brand" disabled={loading}>
                 {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <LogIn className="h-4 w-4" />}
                 Anmelden
               </Button>
@@ -284,7 +284,7 @@ export function LoginDialog({ open, onOpenChange, onSuccess, subtitle }: LoginDi
               </span>
             </label>
             <DialogFooter className="flex-col gap-2 sm:flex-col p-0 pt-2">
-              <Button type="submit" className="w-full bg-gradient-to-r from-teal-500 to-emerald-600 hover:from-teal-600 hover:to-emerald-700 text-white border-0" disabled={loading || !agbAccepted}>
+              <Button type="submit" className="w-full btn-brand text-white border-0" disabled={loading || !agbAccepted}>
                 {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <UserPlus className="h-4 w-4" />}
                 Konto erstellen
               </Button>
@@ -314,7 +314,7 @@ export function LoginDialog({ open, onOpenChange, onSuccess, subtitle }: LoginDi
               Wir senden Ihnen einen Anmelde-Link per E-Mail. Kein Passwort nötig.
             </p>
             <DialogFooter className="flex-col gap-2 sm:flex-col p-0 pt-2">
-              <Button type="submit" className="w-full bg-gradient-to-r from-teal-500 to-emerald-600 hover:from-teal-600 hover:to-emerald-700 text-white border-0" disabled={loading}>
+              <Button type="submit" className="w-full btn-brand" disabled={loading}>
                 {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Mail className="h-4 w-4" />}
                 Magic Link senden
               </Button>
@@ -348,7 +348,7 @@ export function LoginDialog({ open, onOpenChange, onSuccess, subtitle }: LoginDi
               Wir senden dir einen Link zum Zurücksetzen deines Passworts.
             </p>
             <DialogFooter className="flex-col gap-2 sm:flex-col p-0 pt-2">
-              <Button type="submit" className="w-full bg-gradient-to-r from-teal-500 to-emerald-600 hover:from-teal-600 hover:to-emerald-700 text-white border-0" disabled={loading}>
+              <Button type="submit" className="w-full btn-brand" disabled={loading}>
                 {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Mail className="h-4 w-4" />}
                 Reset-Link senden
               </Button>

@@ -110,13 +110,13 @@ export const CookieBanner: React.FC = () => {
                 </button>
                 <button
                   onClick={() => setShowSettings(true)}
-                  className="flex-1 px-4 py-2 text-sm font-medium text-teal-600 border border-teal-600 rounded-lg hover:bg-teal-50 transition-colors"
+                  className="flex-1 px-4 py-2 text-sm font-medium text-blue-600 border border-blue-600 rounded-lg hover:bg-blue-50 transition-colors"
                 >
                   Einstellungen
                 </button>
                 <button
                   onClick={handleAcceptAll}
-                  className="flex-1 px-4 py-2 text-sm font-medium text-white bg-teal-600 rounded-lg hover:bg-teal-700 transition-colors"
+                  className="flex-1 px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors"
                 >
                   Alle akzeptieren
                 </button>
@@ -153,7 +153,7 @@ export const CookieBanner: React.FC = () => {
                       type="checkbox"
                       checked={true}
                       disabled
-                      className="w-5 h-5 text-teal-600 rounded cursor-not-allowed"
+                      className="w-5 h-5 text-blue-600 rounded cursor-not-allowed"
                     />
                   </div>
                 </div>
@@ -173,7 +173,7 @@ export const CookieBanner: React.FC = () => {
                       onClick={() => handleToggle('analytics')}
                       className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
                         consent.analytics
-                          ? 'bg-teal-600'
+                          ? 'bg-blue-600'
                           : 'bg-gray-300'
                       }`}
                     >
@@ -201,7 +201,7 @@ export const CookieBanner: React.FC = () => {
                       onClick={() => handleToggle('marketing')}
                       className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
                         consent.marketing
-                          ? 'bg-teal-600'
+                          ? 'bg-blue-600'
                           : 'bg-gray-300'
                       }`}
                     >
@@ -225,7 +225,7 @@ export const CookieBanner: React.FC = () => {
                 </button>
                 <button
                   onClick={handleSaveSettings}
-                  className="flex-1 px-4 py-2 text-sm font-medium text-white bg-teal-600 rounded-lg hover:bg-teal-700 transition-colors"
+                  className="flex-1 px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors"
                 >
                   Speichern
                 </button>

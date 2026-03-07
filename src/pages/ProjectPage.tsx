@@ -20,6 +20,7 @@ import { BUNDESLAND_LABELS } from '@/calc/grunderwerbsteuer'
 import { RentabilitaetBadge } from '@/components/results/RentabilitaetBadge'
 import { RentabilitaetDialog } from '@/components/results/RentabilitaetDialog'
 import { calculateRentabilitaet } from '@/calc/rentabilitaet'
+import { berechneMarktvergleich } from '@/data/marktdaten'
 import { ProjectHeaderKpis } from '@/components/results/ProjectHeaderKpis'
 import { GrunddatenEditDialog } from '@/components/inputs/GrunddatenEditDialog'
 import { MapPreview } from '@/components/shared/MapPreview'
@@ -111,9 +112,16 @@ export function ProjectPage() {
     if (project) setActiveProject(project.id)
   }, [project, setActiveProject])
 
+  const markt = useMemo(() => {
+    if (!project || !project.wohnflaeche || project.wohnflaeche <= 0) return undefined
+    const preisProQm = project.kaufpreis / project.wohnflaeche
+    const mieteProQm = project.monatsmieteKalt / project.wohnflaeche
+    return berechneMarktvergleich(preisProQm, mieteProQm, project.lat, project.lng)
+  }, [project])
+
   const rentabilitaet = useMemo(
-    () => result && project ? calculateRentabilitaet(result.kpis, project.nutzungsart, project) : null,
-    [result, project],
+    () => result && project ? calculateRentabilitaet(result.kpis, project.nutzungsart, project, markt) : null,
+    [result, project, markt],
   )
 
   if (!loaded) return null

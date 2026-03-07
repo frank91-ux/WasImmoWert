@@ -75,8 +75,8 @@ export function SubscriptionModal({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <div className="relative">
-              <div className="absolute inset-0 bg-gradient-to-r from-teal-500 to-emerald-600 rounded-full blur-md opacity-50" />
-              <div className="relative bg-gradient-to-r from-teal-500 to-emerald-600 p-2 rounded-full">
+              <div className="absolute inset-0 brand-gradient rounded-full blur-md opacity-50" />
+              <div className="relative brand-gradient p-2 rounded-full">
                 <PlanIcon className="w-5 h-5 text-white" />
               </div>
             </div>
@@ -86,9 +86,9 @@ export function SubscriptionModal({
 
         <div className="space-y-6">
           {/* Price Section */}
-          <div className="text-center py-4 bg-gradient-to-r from-teal-50 to-emerald-50 rounded-lg border border-teal-200">
+          <div className="text-center py-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border border-blue-200">
             <div className="flex items-baseline justify-center gap-1">
-              <span className="text-4xl font-bold bg-gradient-to-r from-teal-600 to-emerald-600 bg-clip-text text-transparent">
+              <span className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
                 {plan.price}
               </span>
               {plan.period && (
@@ -106,7 +106,7 @@ export function SubscriptionModal({
               {plan.features.map((feature, index) => (
                 <li key={index} className="flex items-start gap-3">
                   <div className="mt-1 flex-shrink-0">
-                    <div className="flex items-center justify-center h-5 w-5 rounded-full bg-gradient-to-r from-teal-500 to-emerald-600">
+                    <div className="flex items-center justify-center h-5 w-5 rounded-full brand-gradient">
                       <Check className="h-3 w-3 text-white" />
                     </div>
                   </div>
@@ -140,7 +140,7 @@ export function SubscriptionModal({
           </Button>
           <Button
             onClick={handleActivate}
-            className="flex-1 bg-gradient-to-r from-teal-500 to-emerald-600 hover:from-teal-600 hover:to-emerald-700 text-white border-0"
+            className="flex-1 btn-brand"
           >
             Aktivieren
           </Button>

@@ -8,6 +8,7 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { ChartCard } from '@/components/charts/ChartCard'
 import { InvestmentComparisonChart } from '@/components/charts/InvestmentComparisonChart'
 import { formatEur, formatPercent, formatFactor } from '@/lib/format'
+import { berechneMarktvergleich } from '@/data/marktdaten'
 import { TOOLTIP_STYLE, AXIS_TICK, GRID_STYLE, CHART_COLORS, ANIMATION_DURATION } from '@/components/charts/chartTheme'
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, ReferenceLine,
@@ -55,9 +56,16 @@ function ProjectResult({ project, primaryKpi }: { project: Project; primaryKpi: 
 function ComparisonColumn({ project, result, primaryKpi }: { project: Project; result: CalculationResult; primaryKpi: string }) {
   const { kpis } = result
   const cashflowColor = kpis.monatlichCashflowNachSteuer >= 0 ? 'text-success' : 'text-destructive'
+  const markt = useMemo(() => {
+    if (!project.wohnflaeche || project.wohnflaeche <= 0) return undefined
+    const preisProQm = project.kaufpreis / project.wohnflaeche
+    const mieteProQm = project.monatsmieteKalt / project.wohnflaeche
+    return berechneMarktvergleich(preisProQm, mieteProQm, project.lat, project.lng)
+  }, [project.kaufpreis, project.wohnflaeche, project.monatsmieteKalt, project.lat, project.lng])
+
   const rentabilitaet = useMemo(
-    () => calculateRentabilitaet(kpis, project.nutzungsart),
-    [kpis, project.nutzungsart]
+    () => calculateRentabilitaet(kpis, project.nutzungsart, project, markt),
+    [kpis, project.nutzungsart, project, markt]
   )
 
   const primaryLabel = KPI_LABELS[primaryKpi] || 'Monatl. Cashflow'

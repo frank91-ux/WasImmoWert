@@ -11,7 +11,7 @@ export default function ImpressumPage() {
         <div className="mb-8">
           <button
             onClick={() => navigate('/')}
-            className="flex items-center gap-2 text-teal-600 hover:text-teal-700 mb-6"
+            className="flex items-center gap-2 text-blue-600 hover:text-blue-700 mb-6"
           >
             <ArrowLeft size={20} />
             Zurück
@@ -58,7 +58,7 @@ export default function ImpressumPage() {
             <div className="space-y-2">
               <p><strong>Telefon:</strong> [PLACEHOLDER: +49 XXX XXXXXXXX]</p>
               <p><strong>E-Mail:</strong> [PLACEHOLDER: kontakt@example.com]</p>
-              <p><strong>Internet:</strong> <a href="#" className="text-teal-600 hover:text-teal-700">www.wasimmowert.de</a></p>
+              <p><strong>Internet:</strong> <a href="#" className="text-blue-600 hover:text-blue-700">www.wasimmowert.de</a></p>
             </div>
           </section>
 
@@ -87,7 +87,7 @@ export default function ImpressumPage() {
           <section>
             <h2 className="text-2xl font-semibold text-gray-900 mb-3">Datenschutz</h2>
             <p>
-              Informationen zur Verarbeitung personenbezogener Daten finden Sie in unserer <a href="/legal/datenschutz" className="text-teal-600 hover:text-teal-700">Datenschutzerklärung</a>.
+              Informationen zur Verarbeitung personenbezogener Daten finden Sie in unserer <a href="/legal/datenschutz" className="text-blue-600 hover:text-blue-700">Datenschutzerklärung</a>.
             </p>
           </section>
 
@@ -104,7 +104,7 @@ export default function ImpressumPage() {
         <div className="mt-12 pt-6 border-t border-gray-200">
           <button
             onClick={() => navigate('/')}
-            className="text-teal-600 hover:text-teal-700 flex items-center gap-2"
+            className="text-blue-600 hover:text-blue-700 flex items-center gap-2"
           >
             <ArrowLeft size={20} />
             Zur Startseite

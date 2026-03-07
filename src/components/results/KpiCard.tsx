@@ -24,7 +24,7 @@ export function KpiCard({ label, value, tooltip, trend, subtitle, example, class
 
   return (
     <Card
-      className={cn(onClick && 'cursor-pointer hover:shadow-md transition-shadow', className)}
+      className={cn('hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200', onClick && 'cursor-pointer', className)}
       onClick={onClick}
     >
       <CardContent className="p-4">

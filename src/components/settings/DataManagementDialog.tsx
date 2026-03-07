@@ -93,7 +93,7 @@ export const DataManagementDialog: React.FC<DataManagementDialogProps> = ({
               <button
                 onClick={handleExportData}
                 disabled={isLoading}
-                className="w-full px-4 py-3 text-left rounded-lg border-2 border-gray-200 hover:border-teal-400 hover:bg-teal-50 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full px-4 py-3 text-left rounded-lg border-2 border-gray-200 hover:border-blue-400 hover:bg-blue-50 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <div className="flex items-start gap-3">
                   <div className="flex-1">
@@ -104,7 +104,7 @@ export const DataManagementDialog: React.FC<DataManagementDialogProps> = ({
                       Lade eine Kopie deiner persönlichen Daten herunter (DSGVO-Artikel 15).
                     </p>
                   </div>
-                  <div className="text-teal-600 text-sm font-medium flex-shrink-0">
+                  <div className="text-blue-600 text-sm font-medium flex-shrink-0">
                     →
                   </div>
                 </div>

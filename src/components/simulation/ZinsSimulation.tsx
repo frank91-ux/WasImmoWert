@@ -158,11 +158,11 @@ export function ZinsSimulation({ project, result, onChange }: ZinsSimulationProp
     <Card className={`border-2 shadow-sm ${
       isVollgetilgt && zinsbindungsEnde > 0
         ? 'border-green-500/30 bg-green-500/5'
-        : 'border-teal-500/30 bg-teal-500/5'
+        : 'border-blue-500/30 bg-blue-500/5'
     }`}>
       <CardHeader className="pb-2">
         <div className="flex items-center gap-2">
-          <ArrowUpDown className="h-5 w-5 text-teal-600" />
+          <ArrowUpDown className="h-5 w-5 text-blue-600" />
           <div>
             <CardTitle className="text-base">Zins-Simulation & Anschlussfinanzierung</CardTitle>
             <CardDescription className="text-xs">
@@ -186,7 +186,7 @@ export function ZinsSimulation({ project, result, onChange }: ZinsSimulationProp
               <p className="text-lg font-bold tabular-nums">{formatPercent(getilgtProzent)}</p>
               <div className="h-1.5 w-full bg-muted rounded-full overflow-hidden">
                 <div
-                  className={`h-full rounded-full transition-all ${isVollgetilgt ? 'bg-green-500' : 'bg-teal-500'}`}
+                  className={`h-full rounded-full transition-all ${isVollgetilgt ? 'bg-green-500' : 'bg-blue-500'}`}
                   style={{ width: `${Math.min(100, getilgtProzent)}%` }}
                 />
               </div>
@@ -237,9 +237,9 @@ export function ZinsSimulation({ project, result, onChange }: ZinsSimulationProp
             </div>
 
             {/* Initial period - editable */}
-            <div className="p-3 rounded-lg bg-teal-500/10 border border-teal-500/20 space-y-2">
+            <div className="p-3 rounded-lg bg-blue-500/10 border border-blue-500/20 space-y-2">
               <div className="flex items-center gap-1.5 text-sm font-medium">
-                <span className="inline-flex items-center justify-center h-5 w-5 rounded-full bg-teal-500/20 text-teal-700 text-xs font-semibold">1</span>
+                <span className="inline-flex items-center justify-center h-5 w-5 rounded-full bg-blue-500/20 text-blue-700 text-xs font-semibold">1</span>
                 Initial: Jahr 0–{zinsbindungsEnde}
               </div>
               <div className="flex gap-1 flex-wrap">
@@ -264,8 +264,8 @@ export function ZinsSimulation({ project, result, onChange }: ZinsSimulationProp
                     }}
                     className={`px-2 py-0.5 text-[10px] rounded-md border transition-colors ${
                       zinsbindungsEnde === yr
-                        ? 'bg-teal-500/20 border-teal-500/50 text-teal-700 font-medium'
-                        : 'bg-muted/50 border-border text-muted-foreground hover:border-teal-300'
+                        ? 'bg-blue-500/20 border-blue-500/50 text-blue-700 font-medium'
+                        : 'bg-muted/50 border-border text-muted-foreground hover:border-blue-300'
                     }`}
                   >
                     {yr}J

@@ -44,7 +44,7 @@ export default function FeedbackPage() {
         </p>
 
         {submitted && (
-          <div className="bg-teal-50 border border-teal-200 text-teal-700 px-6 py-4 rounded-lg mb-8">
+          <div className="bg-blue-50 border border-blue-200 text-blue-700 px-6 py-4 rounded-lg mb-8">
             <p className="font-semibold">Danke für Ihr Feedback!</p>
             <p className="text-sm mt-1">Wir schätzen Ihre Unterstützung bei der Verbesserung von WasImmoWert.</p>
           </div>
@@ -63,7 +63,7 @@ export default function FeedbackPage() {
                     value={option.value}
                     checked={feedbackType === option.value}
                     onChange={(e) => setFeedbackType(e.target.value as FeedbackType)}
-                    className="w-4 h-4 text-teal-600 cursor-pointer"
+                    className="w-4 h-4 text-blue-600 cursor-pointer"
                   />
                   <label htmlFor={option.value} className="ml-3 text-gray-700 cursor-pointer">
                     {option.label}
@@ -80,7 +80,7 @@ export default function FeedbackPage() {
               onChange={(e) => setDescription(e.target.value)}
               required
               rows={6}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none resize-none"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none resize-none"
               placeholder="Beschreiben Sie Ihr Feedback so detailliert wie möglich..."
             />
           </div>
@@ -93,7 +93,7 @@ export default function FeedbackPage() {
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
               placeholder="ihre.email@example.com"
             />
             <p className="text-xs text-gray-500 mt-2">
@@ -103,7 +103,7 @@ export default function FeedbackPage() {
 
           <button
             type="submit"
-            className="w-full bg-teal-600 hover:bg-teal-700 text-white font-semibold py-3 rounded-lg transition-colors flex items-center justify-center gap-2"
+            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-lg transition-colors flex items-center justify-center gap-2"
           >
             <Send className="w-4 h-4" />
             Feedback senden
@@ -113,7 +113,7 @@ export default function FeedbackPage() {
         <div className="mt-12 pt-8 border-t border-gray-200">
           <Link
             to="/"
-            className="inline-flex items-center gap-2 text-teal-600 hover:text-teal-700 font-medium"
+            className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-700 font-medium"
           >
             <ArrowLeft className="w-4 h-4" />
             Zur Startseite

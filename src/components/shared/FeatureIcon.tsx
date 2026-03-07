@@ -18,9 +18,9 @@ export function FeatureIcon({ icon: Icon, label, size = 'md', className = '' }: 
   return (
     <div className={`flex flex-col items-center gap-2 ${className}`}>
       <div
-        className={`${s.container} rounded-2xl bg-gradient-to-br from-teal-500/10 to-emerald-500/10 border border-teal-200/50 flex items-center justify-center`}
+        className={`${s.container} rounded-2xl bg-gradient-to-br from-blue-500/10 to-indigo-500/10 border border-blue-200/50 flex items-center justify-center`}
       >
-        <Icon className={`${s.icon} text-teal-600`} />
+        <Icon className={`${s.icon} text-blue-600`} />
       </div>
       {label && (
         <span className={`${s.text} font-medium text-foreground text-center`}>{label}</span>

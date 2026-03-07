@@ -248,9 +248,9 @@ export function Sidebar() {
       )
     } else if (plan === 'pro') {
       return (
-        <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-teal-100/20 border border-teal-200/50">
-          <div className="w-2 h-2 rounded-full bg-teal-500" />
-          {!collapsed && <span className="text-xs font-medium text-teal-700">Pro</span>}
+        <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-blue-100/20 border border-blue-200/50">
+          <div className="w-2 h-2 rounded-full bg-blue-500" />
+          {!collapsed && <span className="text-xs font-medium text-blue-400">Pro</span>}
         </div>
       )
     } else {
@@ -272,7 +272,7 @@ export function Sidebar() {
     >
       {/* Logo */}
       <div className={cn('flex items-center gap-3 px-4 h-16 shrink-0', collapsed && 'justify-center px-2')}>
-        <div className="h-9 w-9 rounded-lg bg-gradient-to-br from-teal-500 to-emerald-600 flex items-center justify-center shrink-0">
+        <div className="h-9 w-9 rounded-lg brand-gradient flex items-center justify-center shrink-0">
           <Building2 className="h-5 w-5 text-white" />
         </div>
         {!collapsed && (
@@ -344,7 +344,7 @@ export function Sidebar() {
               <span className="flex items-center gap-1.5"><Briefcase className="h-3 w-3" /> Mein Portfolio</span>
               <button
                 onClick={() => navigate('/portfolio')}
-                className="text-[10px] font-semibold text-teal-500 hover:text-teal-400 transition-colors"
+                className="text-[10px] font-semibold text-blue-400 hover:text-blue-300 transition-colors"
                 title="Zur Portfolio-Übersicht"
               >
                 Alle
@@ -422,7 +422,7 @@ export function Sidebar() {
         <Button
           onClick={handleNewProject}
           className={cn(
-            'w-full bg-gradient-to-r from-teal-500 to-emerald-600 hover:from-teal-600 hover:to-emerald-700 text-white border-0',
+            'w-full btn-brand',
             collapsed && 'px-0'
           )}
           size="sm"

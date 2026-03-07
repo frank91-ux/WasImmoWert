@@ -268,15 +268,15 @@ export function SimpleInputForm({ project, onChange }: SimpleInputFormProps) {
 
               {/* Market comparison info */}
               {(project.wohnungen ?? []).length > 0 && (
-                <div className="flex items-start gap-2 p-2.5 rounded-lg bg-teal-50 dark:bg-teal-950/20 border border-teal-200 dark:border-teal-800 text-sm">
-                  <Info className="h-4 w-4 text-teal-600 shrink-0 mt-0.5" />
+                <div className="flex items-start gap-2 p-2.5 rounded-lg bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800 text-sm">
+                  <Info className="h-4 w-4 text-blue-600 shrink-0 mt-0.5" />
                   <div>
-                    <span className="font-medium text-teal-800 dark:text-teal-200">Marktvergleich {BUNDESLAND_LABELS[project.bundesland]}:</span>
-                    <span className="text-teal-700 dark:text-teal-300 ml-1">
+                    <span className="font-medium text-blue-800 dark:text-blue-200">Marktvergleich {BUNDESLAND_LABELS[project.bundesland]}:</span>
+                    <span className="text-blue-700 dark:text-blue-300 ml-1">
                       Ø {getMarktdatenForBundesland(project.bundesland).mietpreisProQm.toFixed(2)} €/m²
                     </span>
                     {project.wohnungen.length > 0 && project.wohnflaeche > 0 && (
-                      <span className="text-teal-600 dark:text-teal-400 ml-1">
+                      <span className="text-blue-600 dark:text-blue-400 ml-1">
                         · Ihre Ø: {(project.wohnungen.reduce((s, w) => s + w.mietpreis, 0) / project.wohnungen.reduce((s, w) => s + w.qm, 0) || 0).toFixed(2)} €/m²
                       </span>
                     )}

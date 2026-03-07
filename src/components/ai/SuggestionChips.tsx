@@ -103,13 +103,13 @@ export function SuggestionChips({ onSelect, disabled }: SuggestionChipsProps) {
             onClick={() => onSelect(s.prompt)}
             disabled={disabled}
             className="flex items-start gap-3 p-3 rounded-xl text-left
-              bg-card hover:bg-muted/60 border hover:border-teal-300 dark:hover:border-teal-700
+              bg-card hover:bg-muted/60 border hover:border-blue-300 dark:hover:border-blue-700
               transition-all group
               disabled:opacity-40 disabled:cursor-not-allowed
               hover:shadow-sm active:scale-[0.98]"
           >
-            <div className="w-8 h-8 rounded-lg bg-teal-50 dark:bg-teal-950/30 border border-teal-200 dark:border-teal-800 flex items-center justify-center shrink-0 group-hover:bg-teal-100 dark:group-hover:bg-teal-900/40 transition-colors">
-              <Icon className="h-4 w-4 text-teal-600 dark:text-teal-400" />
+            <div className="w-8 h-8 rounded-lg bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 flex items-center justify-center shrink-0 group-hover:bg-blue-100 dark:group-hover:bg-blue-900/40 transition-colors">
+              <Icon className="h-4 w-4 text-blue-600 dark:text-blue-400" />
             </div>
             <div className="min-w-0">
               <div className="text-sm font-medium text-foreground">{s.label}</div>
